@@ -87,7 +87,7 @@ def fromJsonFile(fileName, key, isPost, collection):
                 # dict type
                 collection.insert_one(entry)
 
-    print("Done!")
+    print("{} collection has been added.".format(key.upper()))
 
 
 
@@ -97,7 +97,7 @@ def post():
     user access to make a post given title and body
     text fields are filled and meet proper requirements
     """
-    
+
     global user_id
     print("\nMAKE A POST")
     title = body = ''
@@ -148,6 +148,9 @@ def post():
 # delete_all(tagsCol)
 
 def getMaxID(collection):
+    """
+    Get the maximum id of a document in a collection
+    """
     return collection.find_one(sort=[("Id", DESCENDING)])["Id"]
 
 
@@ -175,9 +178,15 @@ def answer(questionID, userID):
     print(">>> Your Answer (id#{}) was added to Question (id#{}).".format(
         answerDict["Id"], questionID))
 
+    
 # print(datetime.datetime.now().isoformat())
 # print(postCol)
 
+
+# def generate_table(*args):
+#     table = BeautifulTable()
+#     table.columns.header = [i for i in args] 
+#     table.set_style(BeautifulTable.STYLE_BOX)
 
 def list_answers(questionID):
     """
@@ -185,7 +194,11 @@ def list_answers(questionID):
     """
     answers = postCol.find({"PostTypeId": "2", "ParentId": questionID})
 
-    print("\n{:>50}".format("ANSWERS FOR QUESTION " + questionID))
+    count = 0
+
+    print("\n{:>52}".format("ANSWERS FOR QUESTION " + questionID))
+
+    print("\n{:>50}".format("\u2605 (accepted answer)"))
 
     table = BeautifulTable()
 
@@ -202,7 +215,9 @@ def list_answers(questionID):
     for answer in answers:
         if int(answer["Id"]) != accId: 
             table.rows.append([answer["Body"][0:80], answer["CreationDate"], answer["Score"]])
+            count += 1
     
+    table.rows.header = [str(i) for i in range(1, count+2)]
     print(table)
 
 def vote():
@@ -213,4 +228,11 @@ def vote():
 # answer(12345, 14141)
 # print(getMaxID(tagsCol))
 
-list_answers("1")
+def login():
+
+    uid = input("Enter your user id (blank to skip): ")
+
+    
+
+list_answers("54")
+# login()
