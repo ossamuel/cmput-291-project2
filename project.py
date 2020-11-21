@@ -1,6 +1,7 @@
 import pymongo
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING, DESCENDING
 import json
+import re
 
 # Mongoclient object (Online)
 client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/<dbname>?retryWrites=true&w=majority")
@@ -64,12 +65,28 @@ tags2 = {
 
 # tagsCol.insert_one(tags2)
 
+def delete_all(collection):
+    """
+    Delete all document in a collection
+    Delete all rows in a table (SQL Version)
+    """
+    collection.delete_many({})
+
 def insert_one(collection, document):
     collection.insert_one(document)
 
+def parse_terms(title="", body=""):    
+    new_string = [i for i in re.split("\s|[,.!?<>()/=:]", title+body) if len(i) > 2 and i != '"']
+    no_duplicate = []
+    
+    for i in new_string:
+        if i not in no_duplicate:
+            no_duplicate.append(i)
+
+    return no_duplicate
 
 # key in ["posts", "tags", "votes"]
-def fromJsonFile(fileName, key):
+def fromJsonFile(fileName, key, isPost):
     """
     Reads json file and constructs a collection for each (except for Posts collection)
     """
@@ -79,12 +96,43 @@ def fromJsonFile(fileName, key):
         # load the json
         data = json.load(file)
         # go through every single dict
-        for entry in data[key]["row"]:
-            # dict type
-            print(entry)
-            print("\n")
-            # insert_one()
+        if isPost:
+            count = 0
+            for entry in data[key]["row"]:
+                
+                title = entry.get("Title", 0)
+                body = entry.get("Body", 0)
+                terms = None
 
-fromJsonFile("Posts.json", "posts")
+                # Title and body exists
+                if title and body:
+                    terms = parse_terms(entry["Title"], entry["Body"])
 
+                # Only title exists
+                elif title:
+                    terms = parse_terms(entry["Title"])
+
+                # Only body exists
+                elif body:
+                    terms = (parse_terms(entry["Body"]))
+                
+                termsDict = {"Terms": terms}
+                
+                combined = {**entry, **termsDict}
+                postCol.insert_one(combined)
+                postCol.create_index([('Terms', ASCENDING)])
+            
+              #  print(combied)
+              #  print("\n")
+        else:
+            for entry in data[key]["row"]:
+                # dict type
+                print(entry)
+                print("\n")
+                # insert_one()
+    
+    print("Done!")
+
+fromJsonFile("Posts.json", "posts", True)
+# delete_all(postCol)
 
