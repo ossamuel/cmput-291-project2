@@ -5,7 +5,8 @@ import json
 import re
 from beautifultable import BeautifulTable
 
-ANONYMOUS = True
+anonymous = True
+userID = None
 
 # Mongoclient object (Online)
 client = MongoClient(
@@ -31,6 +32,8 @@ def delete_all(collection):
 def insert_one(collection, document):
     collection.insert_one(document)
 
+def getCurrentDateTime():
+    return datetime.datetime.now().isoformat()[:23]
 
 def parse_terms(title="", body=""):
     new_string = [i for i in re.split(
@@ -98,7 +101,8 @@ def post():
     text fields are filled and meet proper requirements
     """
 
-    global user_id
+    global userID
+
     print("\nMAKE A POST")
     title = body = ''
     while True:
@@ -123,12 +127,12 @@ def post():
         s += "<"+str(tag[i])+">"
     body = "<p>"+body+"</p>"
     post_q = {
-         "Id":  getMAXID(postCol) + 1,
-         "OwnerUserId": user_id,
+         "Id":  getMaxID(postCol) + 1,
+         "OwnerUserId": userID,
          "Title": title,
          "Body": body,
          "Tags": tag,
-         "CreationDate": datetime.datetime.now().isoformat(),
+         "CreationDate": getCurrentDateTime(),
          "OwnerUserId": userID,
          "Score": 0,
          "ViewCount": 0,
@@ -165,11 +169,11 @@ def answer(questionID, userID):
         "Id": str(int(getMaxID(postCol)) + 1),
         "PostTypeId": "2",
         "ParentId": questionID,
-        "CreationDate": datetime.datetime.now().isoformat(),
+        "CreationDate": getCurrentDateTime(),
         "Score": 0,
         "Body": text,
         "OwnerUserId": userID,
-        "LastActivityDate": datetime.datetime.now().isoformat(),
+        "LastActivityDate": getCurrentDateTime(),
         "CommentCount": 0,
         "ContentLicense": "CC BY-SA 2.5"
       }
@@ -220,10 +224,38 @@ def list_answers(questionID):
     table.rows.header = [str(i) for i in range(1, count+2)]
     print(table)
 
-def vote():
+def vote(postId):
     """
     Vote on a selected question
+    Anonymous users can vote with no constraint
     """
+    global userID
+
+    vote = None
+
+    if anonymous:
+
+        vote =  {
+            "Id": getMaxID(),
+            "PostId": postId,
+            "VoteTypeId": "2",
+            "CreationDate": getCurrentDateTime()
+        }
+
+    else:
+        
+        vote =  {
+            "Id": getMaxID(),
+            "PostId": postId,
+            "VoteTypeId": "2",
+            "UserId": userID,
+            "CreationDate": getCurrentDateTime()
+        }
+    
+    # For each vote, the score field in Posts will also increase by one
+    
+    votesCol.insert_one(vote)
+    print("Your vote for {} has been successfully casted.".format(postId))
 
 # answer(12345, 14141)
 # print(getMaxID(tagsCol))
@@ -234,5 +266,6 @@ def login():
 
     
 
-list_answers("54")
+# list_answers("54")
 # login()
+
