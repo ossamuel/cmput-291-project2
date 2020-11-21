@@ -2,7 +2,7 @@ import pymongo
 from pymongo import MongoClient
 import json
 
-# Mongoclient object
+# Mongoclient object (Online)
 client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/<dbname>?retryWrites=true&w=majority")
 
 # Name of the database
@@ -54,13 +54,26 @@ votesCol = db["Votes"]
 
 # votesCol.insert_one(vote1)
 
+tags2 = {
+        "Id": "6",
+        "TagName": "snow-leopard",
+        "Count": 1197,
+        "ExcerptPostId": "8990",
+        "WikiPostId": "8989"
+      }
+
+# tagsCol.insert_one(tags2)
+
 def insert_one(collection, document):
     collection.insert_one(document)
 
 
-
 # key in ["posts", "tags", "votes"]
 def fromJsonFile(fileName, key):
+    """
+    Reads json file and constructs a collection for each (except for Posts collection)
+    """
+    
     # open the file
     with open(fileName) as file:
         # load the json
@@ -69,7 +82,9 @@ def fromJsonFile(fileName, key):
         for entry in data[key]["row"]:
             # dict type
             print(entry)
+            print("\n")
+            # insert_one()
 
-# fromJsonFile("Votes.json", "votes")
+fromJsonFile("Posts.json", "posts")
 
 
