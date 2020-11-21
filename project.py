@@ -1,4 +1,5 @@
 import pymongo
+import datetime
 from pymongo import MongoClient, ASCENDING, DESCENDING
 import json
 import re
@@ -86,7 +87,7 @@ def parse_terms(title="", body=""):
     return no_duplicate
 
 # key in ["posts", "tags", "votes"]
-def fromJsonFile(fileName, key, isPost):
+def fromJsonFile(fileName, key, isPost, collection):
     """
     Reads json file and constructs a collection for each (except for Posts collection)
     """
@@ -122,20 +123,17 @@ def fromJsonFile(fileName, key, isPost):
                 postCol.insert_one(combined)
                 postCol.create_index([('Terms', ASCENDING)])
             
-              #  print(combied)
-              #  print("\n")
         else:
             for entry in data[key]["row"]:
                 # dict type
-                print(entry)
-                print("\n")
-                # insert_one()
+                collection.insert_one(entry)
     
     print("Done!")
 
-fromJsonFile("Posts.json", "posts", True)
+
 # delete_all(postCol)
 
+<<<<<<< Updated upstream
 def post():
     '''
     This function is responsible for giving 
@@ -183,4 +181,55 @@ def post():
     }
     postCol.insert_one(post_q) 
     print('Successfully made a post.\n')
+
+
+#fromJsonFile("Posts.json", "posts", True, postCol)
+#fromJsonFile("Votes.json", "votes", False, votesCol)
+#fromJsonFile("Tags.json", "tags", False, tagsCol)
+# delete_all(votesCol)
+# delete_all(tagsCol)
+
+def getMaxID(collection):
+    return collection.find_one(sort=[($convert:"Id", DESCENDING)])["Id"]
+    
+def answer(questionID, userID):
+    """
+    Answer the question by providing a text
+    """
+    
+    text = input(f"Enter an answer for {questionID}: ")
+    
+    answerDict = {
+        "Id": str(int(getMaxID(postCol)) + 1),
+        "PostTypeId": "2",
+        "ParentId": questionID,
+        "CreationDate": datetime.datetime.now().isoformat(),
+        "Score": 0,
+        "Body": text,
+        "OwnerUserId": userID,
+        "LastActivityDate": datetime.datetime.now().isoformat(),
+        "CommentCount": 0,
+        "ContentLicense": "CC BY-SA 2.5"
+      }
+    
+   # postCol.insert_one(answer)
+    print(">>> Your Answer (id#{}) was added to Question (id#{}).".format(answerDict["Id"], questionID))
+
+#print(datetime.datetime.now().isoformat())
+#print(postCol)
+
+
+def list_answers():
+    """
+    List answers of a selected question
+    """
+    pass
+
+def vote():
+    """
+    Vote on a selected question
+    """
+
+#answer(12345, 14141)
+print(getMaxID(tagsCol))
 
