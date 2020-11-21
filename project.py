@@ -136,3 +136,51 @@ def fromJsonFile(fileName, key, isPost):
 fromJsonFile("Posts.json", "posts", True)
 # delete_all(postCol)
 
+def post():
+    '''
+    This function is responsible for giving 
+    user access to make a post given title and body
+    text fields are filled and meet proper requirements
+    '''
+    global user_id
+    print("\nMAKE A POST")
+    title = body = ''
+    while True:
+        title = input('Please enter a title for the post: \n')
+        if format_check(title, 1): break
+    
+    while True:
+        body = input('Please enter a body for the post: \n')
+        if format_check(body, 1): break
+    while True:
+        tag = input('Please enter a tags for the post: \n')
+        if tag:
+            if format_check(tag, 1): break
+            
+        else:
+            #no tag entered by user
+            break
+    tag = tag.split()
+    n = len(tag)
+    s = ""
+    for i in range(n):
+        s+="<"+str(tag[i])+">"
+    body = "<p>"+body+"</p>"
+    post_q = {
+         "Id":  getMAXID(postCol) + 1,
+         "OwnerUserId": user_id,
+         "Title": title,
+         "Body": body,
+         "Tags": tag,
+         "CreationDate": datetime.datetime.now().isoformat(),
+         "OwnerUserId": userID,
+         "Score": 0,
+         "ViewCount": 0,
+         "AnswerCount": 0,
+         "CommentCount": 0,
+         "FavoriteCount": 0,
+         "ContentLicense": "CC BY-SA 2.5"
+    }
+    postCol.insert_one(post_q) 
+    print('Successfully made a post.\n')
+
