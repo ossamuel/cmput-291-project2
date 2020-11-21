@@ -264,7 +264,37 @@ def login():
 
     uid = input("Enter your user id (blank to skip): ")
 
+
     
+    
+ def menu():
+    '''
+    This is the main menu or the landing page
+    where user can select various options:
+    This includes: posting a question,
+    searching for a post, Logging out 
+    and Exiting
+    '''
+    
+    while True:
+        print('\nChoose an option: \n1. Post a Question \n2. Search\
+         for posts\n3. Answer a question \n4. List Answers \n5. Log out\n0. Exit\n')
+        inp = input('Please enter a command: ')
+        if inp == '1':
+            post()
+        elif inp == '2':
+            search()
+        elif inp == '3':
+            answer()
+        elif inp == '4':
+            list_answer()
+        elif inp == '5':
+            log_out()
+        elif inp == '0':
+            exit_program()
+        else:
+            invalid_command()
+
 
 # list_answers("54")
 # login()
