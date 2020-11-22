@@ -3,3 +3,6 @@ practice.py
 __pycache__
 mongoLocal.py
 .DS_Store
+Post.json
+Tags.json
+Votes.json
