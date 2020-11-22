@@ -1,3 +1,6 @@
 practice.py
 *.pyc
 __pycache__
+Post.json
+Tags.json
+Votes.json
