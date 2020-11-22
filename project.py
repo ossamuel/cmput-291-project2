@@ -1,19 +1,37 @@
-import pymongo
 import datetime
 from pymongo import MongoClient, ASCENDING, DESCENDING
 import json
 import re
 from beautifultable import BeautifulTable
+from project_functions import *
 
 anonymous = True
-userID = None
+userID = "ANONYMOUS"
 
 # Mongoclient object (Online)
-client = MongoClient(
-    "mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/<dbname>?retryWrites=true&w=majority")
+# client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/<dbname>?retryWrites=true&w=majority")
+
+# Local Mongoclient
+client = MongoClient("mongodb://localhost:27017/")
 
 # Name of the database
 db = client["291db"]
+
+# List of collections
+
+
+def drop_all():
+    """
+    Drop all collections in the database [CAUTION]
+    """
+    colList = db.list_collection_names()
+    # Drop these collection if exist
+    # if "Posts" in colList:
+    #    db.Posts.drop()
+    # if "Tags" in colList:
+    #    db.Tags.drop()
+    # if "Votes" in colList:
+    #   db.Votes.drop()
 
 # Three collections (table) (Posts, Tags, Votes)
 postCol = db["Posts"]
@@ -33,6 +51,9 @@ def insert_one(collection, document):
     collection.insert_one(document)
 
 def getCurrentDateTime():
+    """
+    Follows this format : 2020-09-06T03:15:37.153
+    """
     return datetime.datetime.now().isoformat()[:23]
 
 def parse_terms(title="", body=""):
@@ -145,9 +166,7 @@ def post():
     print('Successfully made a post.\n')
 
 
-# fromJsonFile("Posts.json", "posts", True, postCol)
-# fromJsonFile("Votes.json", "votes", False, votesCol)
-# fromJsonFile("Tags.json", "tags", False, tagsCol)
+
 # delete_all(votesCol)
 # delete_all(tagsCol)
 def search():
@@ -189,7 +208,8 @@ def search():
     # for y in result:
     #     print(y.get("Id"))
     # print("total count", count)
-    display(result)
+ 
+
 def getMaxID(collection):
     """
     Get the maximum id of a document in a collection
@@ -217,8 +237,10 @@ def answer(questionID, userID):
         "ContentLicense": "CC BY-SA 2.5"
       }
 
-   # postCol.insert_one(answer)
-    print(">>> Your Answer (id#{}) was added to Question (id#{}).".format(
+    # Add the answer to the db
+    postCol.insert_one(answer)
+    
+    print(">>> Your Answer (id#{}) for Question (id#{}) has been successfully added.".format(
         answerDict["Id"], questionID))
 
     
@@ -250,10 +272,14 @@ def list_answers(questionID):
     table.set_style(BeautifulTable.STYLE_BOX)
 
     accId = int(postCol.find_one({"Id": questionID})["AcceptedAnswerId"])
+    
+    # Check if there's an accepted answer for the specific post
+    if accId:
+        # Get the accepted answer post
+        acceptedAnswer = postCol.find_one({"Id": str(accId)})
 
-    acceptedAnswer = postCol.find_one({"Id": str(accId)})
-
-    table.rows.append([acceptedAnswer["Body"][0:80] + " " + "\u2605", acceptedAnswer["CreationDate"], acceptedAnswer["Score"]])
+        # Append the body with a star symbol
+        table.rows.append([acceptedAnswer["Body"][0:80] + " " + "\u2605", acceptedAnswer["CreationDate"], acceptedAnswer["Score"]])
 
     for answer in answers:
         if int(answer["Id"]) != accId: 
@@ -292,20 +318,66 @@ def vote(postId):
         }
     
     # For each vote, the score field in Posts will also increase by one
-    
+    postCol.update({"Id": postId}, {"$inc": {"Score": 1}})
+
+    # Insert the vote
     votesCol.insert_one(vote)
+
     print("Your vote for {} has been successfully casted.".format(postId))
 
 # answer(12345, 14141)
 # print(getMaxID(tagsCol))
 
-def login():
+def seeAllFields(postId):
+    """
+    See all fields for the selected answer
+    """
+    row = postCol.find_one({"Id": str(postId)})
+
+    #print(row.keys())
+
+    table = BeautifulTable()
+
+    table.set_style(BeautifulTable.STYLE_BOX)
+
+    print("\n{:>52}".format("ALL FIELDS FOR ANSWER " + postId))
+
+    # table.columns.header = ["Id", "Comment Count", "Content License", "Creation Date", "Favourite Count", "Body", "Last Activity Date", "Last Edit Date", "Last Editor UserID", "Owner User ID", "Post Type ID", "Score", "Tags", "Title", "ViewCount"]
+    table.columns.header = ["Value"]
+    # lst = [row["Id"], row["CommentCount"], row["ContentLicense"], row["CreationDate"], row["FavouriteCount"], row["Body"], row["LastActivityDate"], row["LastEditDate"], row["LastEditorUserId"], row["PostTypeId"], row["Score"], row["Tags"], row["Title"], row["ViewCount"]]
+   
+
+    for k in row.keys():
+        table.rows.append([row[k]])
+
+    table.rows.header = [i for i in row.keys()]
+    print(table)
+
+def log_out():
+    global anonymous, userID
+
+    userID = "ANONYMOUS"
+    anonymous = True
+    print("Logged out.\n")
+
+    log_in()
+
+
+def log_in():
+    global anonymous, userID
+
+    print("LOGIN")
 
     uid = input("Enter your user id (blank to skip): ")
 
+    if uid:
+        userID = uid
+        anonymous = False
 
-    
-    
+    print(f"Welcome back, {userID}")
+    menu()
+
+
 def menu():
     '''
     This is the main menu or the landing page
@@ -314,10 +386,11 @@ def menu():
     searching for a post, Logging out 
     and Exiting
     '''
-    
+    global userID
+
     while True:
-        print('\nChoose an option: \n1. Post a Question \n2. Search\
-         for posts\n3. Answer a question \n4. List Answers \n5. Log out\n0. Exit\n')
+        print(f'\n*** LOGGED IN AS [{userID}] ***\nChoose an option: \n1. Post a Question \n2. Search\
+        for questions\n3. Answer a question \n4. List Answers \n5. Log out\n0. Exit\n')
         inp = input('Please enter a command: ')
         if inp == '1':
             post()
@@ -335,6 +408,24 @@ def menu():
             invalid_command()
 
 
-# list_answers("54")
+# def main():
+#     log_in()
+
+
+list_answers("54")
 # login()
 
+#delete_all(votesCol)
+#delete_all(tagsCol)
+#delete_all(postCol)
+
+# fromJsonFile("Posts.json", "posts", True, postCol)
+# fromJsonFile("Votes.json", "votes", False, votesCol)
+# fromJsonFile("Tags.json", "tags", False, tagsCol)
+
+
+# seeAllFields("62059")
+
+# menu()
+
+# log_in()

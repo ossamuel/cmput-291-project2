@@ -1,3 +1,5 @@
 practice.py
 *.pyc
 __pycache__
+mongoLocal.py
+.DS_Store
