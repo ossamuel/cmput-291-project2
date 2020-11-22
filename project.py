@@ -150,7 +150,46 @@ def post():
 # fromJsonFile("Tags.json", "tags", False, tagsCol)
 # delete_all(votesCol)
 # delete_all(tagsCol)
-
+def search():
+    '''
+    This function is responsible for searching for a post 
+    based on keywords supplied by the user.
+    The system retrieves all posts that contain at
+    least one keyword either in title, body, or tag fields.
+    '''
+    while True:
+        ask = input("Enter one or more keywords (separated by space): ")
+        if format_check(ask): break
+    ask = ask.split()
+    result = []
+    count = 0
+    for keyword in ask:
+        if len(keyword) >= 3:
+            user_doc = postCol.find({"Terms": re.compile('^' + re.escape(keyword) + '$', re.IGNORECASE)})
+            for x in user_doc:
+                if x is not None:
+                    # print(x.get("Id"))
+                    result.append(x)
+                    count+=1
+        #for keywords of length 2 or less 
+        #we search the fields: title, body and tag
+        else:
+            user_doc = postCol.find({
+                '$or':[
+                    {"Title": re.compile('^' + re.escape(keyword) + '$', re.IGNORECASE)},
+                    {"Body": re.compile('^' + re.escape(keyword) + '$', re.IGNORECASE)},
+                    {"Tags": re.compile('^' + re.escape(keyword) + '$', re.IGNORECASE)}
+                ]
+            })
+            for x in user_doc:
+                if x is not None:
+                    # print(x.get("Id"))
+                    result.append(x)
+                    count+=1
+    # for y in result:
+    #     print(y.get("Id"))
+    # print("total count", count)
+    display(result)
 def getMaxID(collection):
     """
     Get the maximum id of a document in a collection
