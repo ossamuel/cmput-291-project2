@@ -15,7 +15,7 @@ client = MongoClient(
 # Name of the database
 db = client["291db"]
 
-# Three collections (Posts, Tags, Votes)
+# Three collections (table) (Posts, Tags, Votes)
 postCol = db["Posts"]
 tagsCol = db["Tags"]
 votesCol = db["Votes"]
@@ -306,7 +306,7 @@ def login():
 
     
     
- def menu():
+def menu():
     '''
     This is the main menu or the landing page
     where user can select various options:
