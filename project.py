@@ -7,7 +7,7 @@ from project_functions import *
 
 anonymous = True
 userID = "ANONYMOUS"
-
+ROWS_TO_DISPLAY = 8
 # Mongoclient object (Online)
 # client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/<dbname>?retryWrites=true&w=majority")
 
@@ -355,6 +355,21 @@ def seeAllFields(postId):
 
     table.rows.header = [i for i in row.keys()]
     print(table)
+    
+    
+def createTable(lst:list):
+    count = 0
+    table = BeautifulTable()
+    table.columns.header = ["Title", "CreationDate", "Score", "AnswerCount"]
+    table.set_style(BeautifulTable.STYLE_BOX)
+    for item in lst:
+       #if post is question
+        if int(item.get("PostTypeId")):
+            table.rows.append([item.get("Title"), item.get("CreationDate"), item.get("Score"), item.get("AnswerCount")])
+            count+=1
+
+    table.rows.header = [str(i) for i in range(1, count+1)]
+    return table
 
 def display(lst:list):
     '''
