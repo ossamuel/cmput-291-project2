@@ -381,7 +381,7 @@ def display(lst:list):
     table = createTable(lst)
     # print(table)
     current_row = 0
-    # print('list items: ', lst)
+    # print('1st items: ', list(lst.get("Id"))[0])
     while True:
         print('Please choose an option:')
         next_page = False
@@ -409,7 +409,8 @@ def display(lst:list):
         inp = input('\nPlease enter a command: ')
         if lst and len(inp) == 1 and inp in '123456789'[:ROWS_TO_DISPLAY]:
             # Select a post
-            actions(page[int(inp) - 1][0])
+            # print('page: ', page[int(inp)-1].get("Title"))
+            actions(page[int(inp)-1].get("Id"))
         elif lst and inp == 'p' and previous_page:
             # Previous
             current_row -= ROWS_TO_DISPLAY
@@ -441,7 +442,7 @@ def allPostFields(postId):
         table.rows.append([row[k]])
 
     table.rows.header = [i for i in row.keys()]
-    print(table)
+    print(table))
 
 def actions(postId):
     print("Selected Post:", postId)
@@ -464,7 +465,7 @@ def actions(postId):
         inp = input('Please enter a command: ')
 
         if int(inp) == 1 and inp in '123456789'[:len(options)]:
-            options[int(inp) - 1](postId, userID)
+            options[int(inp) - 1](postId, userId)
         elif len(inp) == 1 and inp in '123456789'[:len(options)]:
             options[int(inp) - 1](postId)
         elif inp == '0':
