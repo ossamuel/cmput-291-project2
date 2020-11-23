@@ -442,9 +442,10 @@ def allPostFields(postId):
         table.rows.append([row[k]])
 
     table.rows.header = [i for i in row.keys()]
-    print(table))
+    print(table)
 
 def actions(postId):
+    global userID
     print("Selected Post:", postId)
     #increase view count by 1 after question is selected
     postCol.update_one({"Id": postId}, {"$inc": {"ViewCount": 1}})
@@ -465,13 +466,13 @@ def actions(postId):
         inp = input('Please enter a command: ')
 
         if int(inp) == 1 and inp in '123456789'[:len(options)]:
-            options[int(inp) - 1](postId, userId)
+            options[int(inp) - 1](postId,userID)
         elif len(inp) == 1 and inp in '123456789'[:len(options)]:
             options[int(inp) - 1](postId)
         elif inp == '0':
             return
         else:
-            invalid_command()            
+            invalid_command()          
 def log_out():
     global anonymous, userID
 
