@@ -1,17 +1,6 @@
 from datetime import datetime 
 from typing import Callable
 from beautifultable import BeautifulTable
-def createTable(lst) -> BeautifulTable:
-    '''
-    Create a Beautifultable that displays lst in the format from project description.
-    '''
-    table = BeautifulTable()
-    table.maxwidth = 120
-    table.columns.header = ["Title", "Creation Date", "Score", "Answer Count"]
-    for item in lst:
-        table.rows.append([item.get("Title"), '{:10}'.format(item.get("Creation Date")), item.get("Score"), '{:<10}'.format(item.get("Answer Count"))])
-    return table
-
 
 def is_ascii(s:str):
     return len(s) == len(s.encode())
