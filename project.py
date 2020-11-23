@@ -420,6 +420,57 @@ def display(lst:list):
             return
         else:
             invalid_command()
+            
+def allPostFields(postId):
+    '''
+    This function is responsible for giving users
+    the functionality to see all fields of the 
+    question they selected 
+    '''
+    row = postCol.find_one({"Id": str(postId)})
+    
+    table = BeautifulTable()
+
+    table.set_style(BeautifulTable.STYLE_BOX)
+
+    print("\n{:>52}".format("ALL FIELDS FOR Post " + postId))
+
+    table.columns.header = ["Value"]
+    
+    for k in row.keys():
+        table.rows.append([row[k]])
+
+    table.rows.header = [i for i in row.keys()]
+    print(table)
+
+def actions(postId):
+    print("Selected Post:", postId)
+    #increase view count by 1 after question is selected
+    postCol.update_one({"Id": postId}, {"$inc": {"ViewCount": 1}})
+    #all fields of post selected by the user
+    allPostFields(postId)
+    while True:
+        options = []
+        print('Choose an action to perform on this post: ')
+        options.append(answer)
+        print_option(len(options), 'Answer a question')
+        options.append(list_answers)
+        print_option(len(options), 'List answers of question')
+        options.append(vote)
+        print_option(len(options), 'Vote on post')
+        
+
+        print('0. Return to search result. ')
+        inp = input('Please enter a command: ')
+
+        if int(inp) == 1 and inp in '123456789'[:len(options)]:
+            options[int(inp) - 1](postId, userID)
+        elif len(inp) == 1 and inp in '123456789'[:len(options)]:
+            options[int(inp) - 1](postId)
+        elif inp == '0':
+            return
+        else:
+            invalid_command()            
 def log_out():
     global anonymous, userID
 
