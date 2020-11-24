@@ -7,7 +7,7 @@ from project_functions import *
 
 anonymous = True
 userID = "ANONYMOUS"
-
+ROWS_TO_DISPLAY = 8
 # Mongoclient object (Online)
 client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/<dbname>?retryWrites=true&w=majority")
 
@@ -206,8 +206,11 @@ def search():
                     result.append(x)
                     count+=1
     # for y in result:
+    
     #     print(y.get("Id"))
     # print("total count", count)
+    
+    display(result)
  
 
 def getMaxID(collection):
@@ -352,7 +355,124 @@ def seeAllFields(postId):
 
     table.rows.header = [i for i in row.keys()]
     print(table)
+    
+    
+def createTable(lst:list):
+    count = 0
+    table = BeautifulTable()
+    table.columns.header = ["Title", "CreationDate", "Score", "AnswerCount"]
+    table.set_style(BeautifulTable.STYLE_BOX)
+    for item in lst:
+       #if post is question
+        if int(item.get("PostTypeId")):
+            table.rows.append([item.get("Title"), item.get("CreationDate"), item.get("Score"), item.get("AnswerCount")])
+            count+=1
 
+    table.rows.header = [str(i) for i in range(1, count+1)]
+    return table
+
+def display(lst:list):
+    '''
+    This function is responsible for getting all
+    the search results and organzing the results
+    determine how many rows possible in one page
+    '''
+
+    table = createTable(lst)
+    # print(table)
+    current_row = 0
+    # print('1st items: ', list(lst.get("Id"))[0])
+    while True:
+        print('Please choose an option:')
+        next_page = False
+        previous_page = False
+        page = []
+
+        #no returned result 
+        if not lst:
+            print('No result was found.')
+        else:
+            page = lst[current_row:current_row + ROWS_TO_DISPLAY]
+
+            print(table.rows[current_row:current_row + ROWS_TO_DISPLAY])
+            
+            print('\"1 - ' + str(len(page)) + '\": Select a post to do more actions.')
+
+            if not current_row - ROWS_TO_DISPLAY < 0:
+                previous_page = True
+                print('\"p\": Go to previous page.')
+            
+            if not current_row + ROWS_TO_DISPLAY >= len(lst):
+                next_page = True
+                print('\"n\": Go to next page.')
+        print('\"0\": Return to main menu. ')
+        inp = input('\nPlease enter a command: ')
+        if lst and len(inp) == 1 and inp in '123456789'[:ROWS_TO_DISPLAY]:
+            # Select a post
+            # print('page: ', page[int(inp)-1].get("Title"))
+            actions(page[int(inp)-1].get("Id"))
+        elif lst and inp == 'p' and previous_page:
+            # Previous
+            current_row -= ROWS_TO_DISPLAY
+        elif lst and inp == 'n' and next_page:
+            # Next
+            current_row += ROWS_TO_DISPLAY
+        elif inp == '0':
+            return
+        else:
+            invalid_command()
+            
+def allPostFields(postId):
+    '''
+    This function is responsible for giving users
+    the functionality to see all fields of the 
+    question they selected 
+    '''
+    row = postCol.find_one({"Id": str(postId)})
+    
+    table = BeautifulTable()
+
+    table.set_style(BeautifulTable.STYLE_BOX)
+
+    print("\n{:>52}".format("ALL FIELDS FOR Post " + postId))
+
+    table.columns.header = ["Value"]
+    
+    for k in row.keys():
+        table.rows.append([row[k]])
+
+    table.rows.header = [i for i in row.keys()]
+    print(table)
+
+def actions(postId):
+    global userID
+    print("Selected Post:", postId)
+    #increase view count by 1 after question is selected
+    postCol.update_one({"Id": postId}, {"$inc": {"ViewCount": 1}})
+    #all fields of post selected by the user
+    allPostFields(postId)
+    while True:
+        options = []
+        print('Choose an action to perform on this post: ')
+        options.append(answer)
+        print_option(len(options), 'Answer a question')
+        options.append(list_answers)
+        print_option(len(options), 'List answers of question')
+        options.append(vote)
+        print_option(len(options), 'Vote on post')
+        
+
+        print('0. Return to search result. ')
+        inp = input('Please enter a command: ')
+
+        if int(inp) == 1 and inp in '123456789'[:len(options)]:
+            options[int(inp) - 1](postId,userID)
+        elif len(inp) == 1 and inp in '123456789'[:len(options)]:
+            options[int(inp) - 1](postId)
+        elif inp == '0':
+            return
+        else:
+            invalid_command()          
 def log_out():
     global anonymous, userID
 
