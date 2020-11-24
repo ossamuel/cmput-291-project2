@@ -241,10 +241,10 @@ def answer(questionID, userID):
       }
 
     # Add the answer to the db
-    postCol.insert_one(answer)
+    postCol.insert_one(answerDict)
     
     print(">>> Your Answer (id#{}) for Question (id#{}) has been successfully added.".format(
-        answerDict["Id"], questionID))
+        answerDict.get("Id"), questionID))
 
     
 # print(datetime.datetime.now().isoformat())
@@ -274,23 +274,24 @@ def list_answers(questionID):
 
     table.set_style(BeautifulTable.STYLE_BOX)
 
-    accId = int(postCol.find_one({"Id": questionID})["AcceptedAnswerId"])
+    accId = postCol.find_one({"Id": questionID}, {"AcceptedAnswerId"})
     
     # Check if there's an accepted answer for the specific post
-    if accId:
+    if accId.get('AcceptedAnswerId'):
         # Get the accepted answer post
-        acceptedAnswer = postCol.find_one({"Id": str(accId)})
+        acceptedAnswer = postCol.find_one({"Id": str(accId.get('AcceptedAnswerId'))})
 
         # Append the body with a star symbol
         table.rows.append([acceptedAnswer["Body"][0:80] + " " + "\u2605", acceptedAnswer["CreationDate"], acceptedAnswer["Score"]])
-
+    
     for answer in answers:
-        if int(answer["Id"]) != accId: 
+        if int(answer["Id"]) != int(accId.get('AcceptedAnswerId')): 
             table.rows.append([answer["Body"][0:80], answer["CreationDate"], answer["Score"]])
             count += 1
     
     table.rows.header = [str(i) for i in range(1, count+2)]
     print(table)
+
 
 def vote(postId):
     """
@@ -304,7 +305,7 @@ def vote(postId):
     if anonymous:
 
         vote =  {
-            "Id": getMaxID(),
+            "Id": getMaxID(votesCol),
             "PostId": postId,
             "VoteTypeId": "2",
             "CreationDate": getCurrentDateTime()
@@ -313,7 +314,7 @@ def vote(postId):
     else:
         
         vote =  {
-            "Id": getMaxID(),
+            "Id": getMaxID(votesCol),
             "PostId": postId,
             "VoteTypeId": "2",
             "UserId": userID,
@@ -321,12 +322,13 @@ def vote(postId):
         }
     
     # For each vote, the score field in Posts will also increase by one
-    postCol.update({"Id": postId}, {"$inc": {"Score": 1}})
+    postCol.update_one({"Id": postId}, {"$inc": {"Score": 1}})
 
     # Insert the vote
     votesCol.insert_one(vote)
 
     print("Your vote for {} has been successfully casted.".format(postId))
+
 
 # answer(12345, 14141)
 # print(getMaxID(tagsCol))
