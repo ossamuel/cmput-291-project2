@@ -9,10 +9,10 @@ anonymous = True
 userID = "ANONYMOUS"
 
 # Mongoclient object (Online)
-# client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/<dbname>?retryWrites=true&w=majority")
+client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/<dbname>?retryWrites=true&w=majority")
 
 # Local Mongoclient
-client = MongoClient("mongodb://localhost:27017/")
+# client = MongoClient("mongodb://localhost:27017/")
 
 # Name of the database
 db = client["291db"]
@@ -26,12 +26,12 @@ def drop_all():
     """
     colList = db.list_collection_names()
     # Drop these collection if exist
-    # if "Posts" in colList:
-    #    db.Posts.drop()
-    # if "Tags" in colList:
-    #    db.Tags.drop()
-    # if "Votes" in colList:
-    #   db.Votes.drop()
+    if "Posts" in colList:
+       db.Posts.drop()
+    if "Tags" in colList:
+       db.Tags.drop()
+    if "Votes" in colList:
+       db.Votes.drop()
 
 # Three collections (table) (Posts, Tags, Votes)
 postCol = db["Posts"]
@@ -412,7 +412,7 @@ def menu():
 #     log_in()
 
 
-list_answers("54")
+# list_answers("54")
 # login()
 
 #delete_all(votesCol)
@@ -421,7 +421,7 @@ list_answers("54")
 
 # fromJsonFile("Posts.json", "posts", True, postCol)
 # fromJsonFile("Votes.json", "votes", False, votesCol)
-# fromJsonFile("Tags.json", "tags", False, tagsCol)
+fromJsonFile("Tags.json", "tags", False, tagsCol)
 
 
 # seeAllFields("62059")
