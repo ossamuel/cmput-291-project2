@@ -1,9 +1,10 @@
 import datetime
 from pymongo import MongoClient, ASCENDING, DESCENDING
+from pymongo.collation import Collation
 import json
 import re
 from beautifultable import BeautifulTable
-from project_functions import *
+# from project_functions import *
 
 anonymous = True
 userID = "ANONYMOUS"
@@ -217,8 +218,18 @@ def getMaxID(collection):
     """
     Get the maximum id of a document in a collection
     """
-    return collection.find_one(sort=[("Id", DESCENDING)])["Id"]
+    # return collection.find_one(sort=[("Id": {"$toInt": "Id"}, DESCENDING)])["Id"]
+    return collection.find().sort("Id").collation(Collation(locale="en_US", numericOrdering=True))
 
+    # return collection.aggregate({
+    #     "$group":{
+    #         "Id": '',
+    #         "last":{
+    #             "$max" : "$Id"
+    #         }   
+    #     }
+
+    # })
 
 def answer(questionID, userID):
     """
@@ -481,7 +492,6 @@ def log_out():
     userID = "ANONYMOUS"
     anonymous = True
     print("Logged out.\n")
-
     log_in()
 
 
@@ -501,13 +511,14 @@ def log_in():
 
 
 def menu():
-    '''
+    """
     This is the main menu or the landing page
     where user can select various options:
     This includes: posting a question,
     searching for a post, Logging out 
     and Exiting
-    '''
+    """
+
     global userID
 
     while True:
@@ -529,6 +540,14 @@ def menu():
         else:
             invalid_command()
 
+    return 
+
+
+def main():
+    print(getMaxID(postCol))
+
+if __name__ == "__main__":
+    main()
 
 # def main():
 #     log_in()
@@ -543,11 +562,13 @@ def menu():
 
 # fromJsonFile("Posts.json", "posts", True, postCol)
 # fromJsonFile("Votes.json", "votes", False, votesCol)
-fromJsonFile("Tags.json", "tags", False, tagsCol)
+# fromJsonFile("Tags.json", "tags", False, tagsCol)
 
 
 # seeAllFields("62059")
 
-# menu()
+
 
 # log_in()
+
+# getMaxID(postCol)

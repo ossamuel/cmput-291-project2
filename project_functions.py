@@ -533,7 +533,7 @@ def menu():
 #     log_in()
 
 
-menu()
+# menu()
 # login()
 
 #delete_all(votesCol)
