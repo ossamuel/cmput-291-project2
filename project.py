@@ -13,8 +13,8 @@ import ijson
 from tqdm import tqdm
 import time
 
-anonymous = True
-userID = "ANONYMOUS"
+
+userID = None
 client = None
 db = None
 postCol = tagsCol = votesCol = None
@@ -183,6 +183,7 @@ def post():
             "Count": 1,
             }
             tagsCol.insert_one(tag_q)
+            tags_maxId += 1
     n = len(tag)
     s = ""
     for i in range(n):
@@ -190,6 +191,7 @@ def post():
     body = "<p>"+body+"</p>"
     post_q = {
          "Id":  str(post_maxId + 1),
+         "PostTypeId": "1",
          "OwnerUserId": userID,
          "Title": title,
          "Body": body,
@@ -207,7 +209,7 @@ def post():
     post_maxId += 1
 
     postCol.insert_one(post_q)
-    print('Successfully made a post.\n')
+    print('Successfully made a post with (id#{}).\n'.format(post_q["Id"]))
 
 
 def search():
@@ -342,7 +344,7 @@ def vote(postId):
 
     vote = None
 
-    if anonymous:
+    if userID:
 
         vote =  {
             "Id": str(votes_maxId + 1),
@@ -556,16 +558,15 @@ def actions(postId):
         else:
             invalid_command()          
 def log_out():
-    global anonymous, userID
+    global userID
 
-    userID = "ANONYMOUS"
-    anonymous = True
+    userID = None
     print("Logged out.\n")
     log_in()
 
 
 def log_in():
-    global anonymous, userID
+    global userID
 
     print("LOGIN")
 
@@ -577,15 +578,14 @@ def log_in():
     if res:
         userID = uid
         print("Welcome back, {}".format(userID))
-        anonymous = False
         report(uid)
         menu()
 
     elif len(uid) == 0:
-        print("Welcome back, {}".format(userID))
         menu()
 
     else:
+        print("UserID does not exist. Try again.")
         log_in()
 
 def menu():
