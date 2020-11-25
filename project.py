@@ -223,27 +223,30 @@ def answer(questionID):
     global post_maxId
 
     text = input("Enter an answer for {}: ".format(questionID))
-
-    answerDict = {
-        "Id": str(post_maxId + 1),
-        "PostTypeId": "2",
-        "ParentId": questionID,
-        "CreationDate": getCurrentDateTime(),
-        "Score": 0,
-        "Body": text,
-        "OwnerUserId": userID,
-        "LastActivityDate": getCurrentDateTime(),
-        "CommentCount": 0,
-        "ContentLicense": "CC BY-SA 2.5"
-      }
-
-    post_maxId += 1
-
-    # Add the answer to the db
-    postCol.insert_one(answerDict)
     
-    print(">>> Your Answer (id#{}) for Question (id#{}) has been successfully added.".format(
-        answerDict.get("Id"), questionID))
+    if format_check(text, 1):
+        answerDict = {
+            "Id": str(post_maxId + 1),
+            "PostTypeId": "2",
+            "ParentId": questionID,
+            "CreationDate": getCurrentDateTime(),
+            "Score": 0,
+            "Body": text,
+            "OwnerUserId": userID,
+            "LastActivityDate": getCurrentDateTime(),
+            "CommentCount": 0,
+            "ContentLicense": "CC BY-SA 2.5"
+        }
+
+        post_maxId += 1
+
+        # Add the answer to the db
+        postCol.insert_one(answerDict)
+    
+        print(">>> Your Answer (id#{}) for Question (id#{}) has been successfully added.".format(
+            answerDict.get("Id"), questionID))
+    else:
+        return
 
 
 def list_answers(questionID):
