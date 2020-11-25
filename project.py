@@ -4,7 +4,11 @@ from pymongo.collation import Collation
 import json
 import re
 from beautifultable import BeautifulTable
+<<<<<<< Updated upstream
 # from project_functions import *
+=======
+import ijson
+>>>>>>> Stashed changes
 
 anonymous = True
 userID = "ANONYMOUS"
@@ -70,6 +74,14 @@ def parse_terms(title="", body=""):
 
 # key in ["posts", "tags", "votes"]
 
+def readJsonFile(fileName: str, key: str, isPost: bool, collection: pymongo.collection.Collection):
+    with open(fileName) as file:
+        count = 0
+        for item in ijson.items(file, key + '.row.item'):
+            print(item)
+        count +=1
+        if count == 5:
+            return
 
 def fromJsonFile(fileName, key, isPost, collection):
     """
@@ -563,6 +575,7 @@ if __name__ == "__main__":
 # list_answers("54")
 # login()
 
+<<<<<<< Updated upstream
 #delete_all(votesCol)
 #delete_all(tagsCol)
 #delete_all(postCol)
@@ -579,3 +592,12 @@ if __name__ == "__main__":
 # log_in()
 
 # getMaxID(postCol)
+=======
+def main():
+    # readJsonFile('Posts.json', 'posts', True, postCol)
+    # readJsonFile('Tags.json', 'tags', False, tagsCol)
+    readJsonFile('Votes.json', 'votes', False, votesCol)
+
+if __name__ == "__main__":
+    main()
+>>>>>>> Stashed changes
