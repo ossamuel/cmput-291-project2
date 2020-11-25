@@ -248,6 +248,7 @@ def answer(questionID, userID):
     """
     Answer the question by providing a text
     """
+    global userID
 
     text = input(f"Enter an answer for {questionID}: ")
 
@@ -563,6 +564,7 @@ def menu():
 def main():
     # print(getMaxID(postCol))
     # fromJsonFile("Posts.json", "posts", True, postCol)
+    # fromJsonFile("Tags.json", "tags", False, tagsCol)
     # fromJsonFile("Votes.json", "votes", False, votesCol)
     print(type(postCol))
 if __name__ == "__main__":
@@ -582,7 +584,7 @@ if __name__ == "__main__":
 
 
 
-# fromJsonFile("Tags.json", "tags", False, tagsCol)
+
 
 
 # seeAllFields("62059")
