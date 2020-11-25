@@ -372,6 +372,9 @@ def createTable(lst:list):
 
 
 def find_average_score(user:None, post_type: str):
+    '''
+    find user average score
+    '''
     sum_score = 0
     i = 0
     post_str = ''
@@ -393,6 +396,12 @@ def find_average_score(user:None, post_type: str):
 
 
 def report():
+    '''
+    generate user report which includes:
+    the number of questions owned and the average score for those questions
+    the number of answers owned and the average score for those answers
+    the number of votes registered for the user.
+    '''
     if userID:
         print('---REPORT---')
         find_average_score(userID, '1')
@@ -446,8 +455,6 @@ def display(lst:list):
         print('\"0\": Return to main menu. ')
         inp = input('\nPlease enter a command: ')
         if lst and len(inp) == 1 and inp in '123456789'[:ROWS_TO_DISPLAY]:
-            # Select a post
-            # print('page: ', page[int(inp)-1].get("Title"))
             actions(page[int(inp)-1].get("Id"))
         elif lst and inp == 'p' and previous_page:
             # Previous
@@ -483,6 +490,9 @@ def allPostFields(postId):
     print(table)
 
 def actions(postId):
+    '''
+    actions to perform on selected post
+    '''
     global userID
     print("Selected Post:", postId)
     #increase view count by 1 after question is selected
@@ -520,6 +530,9 @@ def log_out():
 
 
 def log_in():
+    '''
+    login given user id is given 
+    '''
     global userID
 
     print("LOGIN")
