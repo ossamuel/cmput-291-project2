@@ -95,53 +95,7 @@ def readJsonFile(fileName: str, key: str, isPost: bool, collection: collection.C
             collection.insert_many(tqdm((i for i in source), desc='Parsing ' + fileName), ordered=False)
         print('Successfully stored ' + fileName + ' into the database.\n')
 
-            
-def fromJsonFile(fileName, key, isPost, collection):
-    """
-    Reads json file and constructs a collection for each (except for Posts collection)
-    """
-
-    # open the file
-    with open(fileName) as file:
-        # load the json
-        data = json.load(file)
-        # go through every single dict
-        if isPost:
-            count = 0
-            for entry in data[key]["row"]:
-
-                title = entry.get("Title", 0)
-                body = entry.get("Body", 0)
-                terms = None
-
-                # Title and body exists
-                if title and body:
-                    terms = parse_terms(entry["Title"], entry["Body"])
-
-                # Only title exists
-                elif title:
-                    terms = parse_terms(entry["Title"])
-
-                # Only body exists
-                elif body:
-                    terms = (parse_terms(entry["Body"]))
-
-                termsDict = {"Terms": terms}
-
-                combined = {**entry, **termsDict}
-                # postCol.insert_one(combined)
-                # postCol.create_index([('Terms', ASCENDING)])
-                print(combined)
-        else:
-            for entry in data[key]["row"]:
-                # dict type
-                # collection.insert_one(entry)
-                print(entry)
-
-    print("{} collection has been added.".format(key.upper()))
-
-
-
+ 
 def post():
     """
     This function is responsible for giving
@@ -344,7 +298,7 @@ def vote(postId):
 
     vote = None
 
-    if userID:
+    if not userID:
 
         vote =  {
             "Id": str(votes_maxId + 1),
@@ -546,7 +500,7 @@ def actions(postId):
         print('0. Return to search result. ')
         inp = input('Please enter a command: ')
 
-        if inp in '123456789'[:len(options)]  and int(inp) == 1:
+        if inp in '123456789'[:len(options)]  and len(inp) == 1:
             options[int(inp) - 1](postId)
         # elif len(inp) == 1 and inp in '123456789'[:len(options)]:
         #     options[int(inp) - 1](postId)
@@ -655,7 +609,6 @@ def store_data():
     '''
     Store all data into the database.
     '''
-    global post_maxId, votes_maxId, tags_maxId
     
     print('-------Start building-------')
     start = time.time()
@@ -667,7 +620,9 @@ def store_data():
 
     print('\nTotal time spent: ' + (str)(total // 60) + 'min ' + (str)(total % 60) + 'sec')
     print('-------End building-------')
-    
+
+def get_all_max():
+    global post_maxId, votes_maxId, tags_maxId
     post_maxId = get_max_id(postCol)
     votes_maxId = get_max_id(votesCol)
     tags_maxId = get_max_id(tagsCol)
@@ -677,6 +632,7 @@ def main():
     if REBUILD_DATABASE:
         drop_all()
         store_data()
+    get_all_max()
     log_in()
 
 if __name__ == "__main__":
