@@ -52,6 +52,9 @@ def getCurrentDateTime():
 
 
 def parse_terms(title: str, body: str) -> dict:
+    """
+    Parse the terms for the terms array
+    """
     res = [i for i in re.split(
         "\s|[-,.!?<>()/=:]", re.sub(re.compile('<.*?>'), ' ', title)+re.sub(re.compile('<.*?>'), ' ', body)) if len(i) > 2]
 
@@ -183,7 +186,6 @@ def post():
     print('Successfully made a post.\n')
 
 
-
 # delete_all(votesCol)
 # delete_all(tagsCol)
 def search():
@@ -198,7 +200,7 @@ def search():
         if format_check(ask): break
     ask = ask.split()
     result = []
-    count = 0
+  
     for keyword in ask:
         if len(keyword) >= 3:
             user_doc = postCol.find({"Terms": re.compile('^' + re.escape(keyword) + '$', re.IGNORECASE)})
@@ -206,7 +208,7 @@ def search():
                 if x is not None:
                     # print(x.get("Id"))
                     result.append(x)
-                    count+=1
+                 
         #for keywords of length 2 or less 
         #we search the fields: title, body and tag
         else:
@@ -221,7 +223,7 @@ def search():
                 if x is not None:
                     # print(x.get("Id"))
                     result.append(x)
-                    count+=1
+                 
     # for y in result:
     
     #     print(y.get("Id"))
@@ -356,7 +358,7 @@ def vote(postId):
             print("You can not vote more than once on a post! \n")
             return
         vote =  {
-            "Id": getMaxID(votesCol),
+            "Id": str(getMaxID(votesCol)),
             "PostId": postId,
             "VoteTypeId": "2",
             "UserId": userID,
@@ -380,8 +382,6 @@ def seeAllFields(postId):
     See all fields for the selected answer
     """
     row = postCol.find_one({"Id": str(postId)})
-
-    #print(row.keys())
 
     table = BeautifulTable()
 
@@ -532,8 +532,11 @@ def log_in():
     print("LOGIN")
 
     uid = input("Enter your user id (blank to skip): ")
+    
+    # Check if the user id exists
+    res = postCol.find_one({"UserId": str(uid)}).get("UserId")
 
-    if uid:
+    if res:
         userID = uid
         anonymous = False
 
@@ -652,7 +655,7 @@ def main():
     connect_db()
     drop_all()
     store_data()
-    search()
+    log_in()
 
 
 if __name__ == "__main__":
