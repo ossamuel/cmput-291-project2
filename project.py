@@ -8,6 +8,7 @@ from beautifultable import BeautifulTable
 from project_functions import *
 import ijson
 from tqdm import tqdm
+import time
 
 anonymous = True
 userID = "ANONYMOUS"
@@ -51,29 +52,24 @@ def getCurrentDateTime():
     """
     return datetime.datetime.now().isoformat()[:23]
 
-def parse_terms(title="", body=""):
-    new_string = [i for i in re.split(
+
+def parse_terms(title: str, body: str) -> dict:
+    res = [i for i in re.split(
         "\s|[-,.!?<>()/=:]", re.sub(re.compile('<.*?>'), ' ', title)+re.sub(re.compile('<.*?>'), ' ', body)) if len(i) > 2 and i != '"']
-    no_duplicate = []
 
-    for i in new_string:
-        if i not in no_duplicate:
-            no_duplicate.append(i)
+    return {(str)(idx): val for idx, val in enumerate(dict.fromkeys(res))}
 
-    return no_duplicate
-
-# key in ["posts", "tags", "votes"]
 
 def readJsonFile(fileName: str, key: str, isPost: bool, collection: collection.Collection):
     with open(fileName) as file:
-        # for item in tqdm(ijson.items(file, key + '.row.item')):
-        #     # if isPost:
-        #     #     getTags(item.get('Title', ''))
-        #     collection.insert_one(item)
-        collection.insert_many(tqdm(ijson.items(file, key + '.row.item')), ordered=False)
+        source  = ijson.items(file, key + '.row.item')
+        if isPost:
+            collection.insert_many(tqdm(({**i,'terms': parse_terms(i.get('Title', ''), i.get('Body', ''))} for i in source), desc='Parsing ' + fileName), ordered=False)
+        else:
+            collection.insert_many(tqdm((i for i in source), desc='Parsing ' + fileName), ordered=False)
+        print('Successfully stored ' + fileName + ' into the database.\n')
 
             
-
 def fromJsonFile(fileName, key, isPost, collection):
     """
     Reads json file and constructs a collection for each (except for Posts collection)
@@ -612,13 +608,25 @@ def connect_db():
     votesCol = db["Votes"]
 
 
-def main():
-    connect_db()
-    drop_all()
+def store_data():
+    print('-------Start building-------')
+    start = time.time()
     readJsonFile('Posts.json', 'posts', True, postCol)
     readJsonFile('Tags.json', 'tags', False, tagsCol)
     readJsonFile('Votes.json', 'votes', False, votesCol)
-    # getTags("Write a program that supports the following operations on the MongoDB database created in Phase 1.")
-  #  list_answers("1")
+    
+    total = (int)(time.time() - start)
+
+    print('\nTotal time spent: ' + (str)(total // 60) + 'min ' + (str)(total % 60) + 'sec')
+    print('-------End building-------')
+    
+
+
+def main():
+    connect_db()
+    drop_all()
+    store_data()
+
+
 if __name__ == "__main__":
     main()
