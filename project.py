@@ -228,7 +228,6 @@ def search():
             user_doc = postCol.find({"Terms": re.compile('^' + re.escape(keyword) + '$', re.IGNORECASE)})
             for x in user_doc:
                 if x is not None:
-                    # print(x.get("Id"))
                     result.append(x)
                  
         #for keywords of length 2 or less 
@@ -243,48 +242,11 @@ def search():
             })
             for x in user_doc:
                 if x is not None:
-                    # print(x.get("Id"))
                     result.append(x)
-                 
-    # for y in result:
-    
-    #     print(y.get("Id"))
-    # print("total count", count)
-    
+                     
     display(result)
  
 
-def getMaxID(collection):
-    """
-    Get the maximum id of a document in a collection
-    """
-    max = 0
-    # return collection.find_one(sort=[("_id", DESCENDING)])
-    #return collection.find().sort([("Id", 1)]).collation({"locale": "en_US", "numericOrdering": True})["Id"]
-    # return collection.find_one(sort=[("Id", DESCENDING)])["Id"]
-    # return collection.find_one().sort("Id").collation(Collation(locale="en_US", numericOrdering=True))
-    # abc < abcd 
-
-    
-
-    # return collection.create_index({"Id": 1}, {"collation": {"locale": "en_US", "numericOrdering": False}}).collation({"locale": "en_US", "numericOrdering": False}).find().sort(["Id", DESCENDING])
-    # return collection.aggregate({
-    #     "$group":{
-    #         "Id": '',
-    #         "last":{
-    #             "$max" : "$Id"
-    #         }   
-    #     }
-
-    # })
-
-    pipeline = [
-        {"$sort": SON([("Id", -1)])},
-        {"$limit": 1}
-    ]
-
-    print(collection.aggregate(pipeline, collation={"locale": "en_US", "numericOrdering": False}))
-    
 def get_max_id(collection):
     """
     Get the max id of a collection
@@ -654,44 +616,6 @@ def menu():
     return 
 
 
-# def main():
-#     # print(getMaxID(postCol))
-#     # fromJsonFile("Posts.json", "posts", True, postCol)
-#     # fromJsonFile("Votes.json", "votes", False, votesCol)
-#     print(type(postCol))
-# if __name__ == "__main__":
-#     main()
-# def main():
-#     # print(getMaxID(postCol))
-#     # fromJsonFile("Posts.json", "posts", True, postCol)
-#     # fromJsonFile("Tags.json", "tags", False, tagsCol)
-#     # fromJsonFile("Votes.json", "votes", False, votesCol)
-#     print(type(postCol))
-
-
-# def main():
-#     log_in()
-
-
-# list_answers("54")
-# login()
-
-#delete_all(votesCol)
-#delete_all(tagsCol)
-#delete_all(postCol)
-
-
-
-# fromJsonFile("Tags.json", "tags", False, tagsCol)
-
-
-# seeAllFields("62059")
-
-
-
-# log_in()
-
-# getMaxID(postCol)
 
 def connect_db():
     '''
@@ -708,6 +632,8 @@ def connect_db():
     else:
         # For development use
         client = MongoClient('localhost', 27017)
+
+        # MongoDB Online Instance
         # client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/291db?retryWrites=true&w=majority")
 
 
@@ -744,9 +670,6 @@ def main():
     if REBUILD_DATABASE:
         drop_all()
         store_data()
-    # search()
-    # for i in range(20000):
-    #     report(str(i))
     log_in()
 
 if __name__ == "__main__":
