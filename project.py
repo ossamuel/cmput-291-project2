@@ -556,24 +556,19 @@ def menu():
     global userID
 
     while True:
-        print(f'\n*** LOGGED IN AS [{userID}] ***\nChoose an option: \n1. Post a Question \n2. Search\
-        for questions\n3. Answer a question \n4. List Answers \n5. Log out\n0. Exit\n')
+        print(f'\n*** LOGGED IN AS [{userID}] ***\nChoose an option: \n1. Post a Question \
+        \n2. Search for questions \n3. Log out\n0. Exit\n')
         inp = input('Please enter a command: ')
         if inp == '1':
             post()
         elif inp == '2':
             search()
         elif inp == '3':
-            answer()
-        elif inp == '4':
-            list_answer()
-        elif inp == '5':
             log_out()
         elif inp == '0':
             exit_program()
         else:
             invalid_command()
-
     return 
 
 
