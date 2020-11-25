@@ -43,9 +43,6 @@ def delete_all(collection):
     collection.delete_many({})
 
 
-def insert_one(collection, document):
-    collection.insert_one(document)
-
 def getCurrentDateTime():
     """
     Follows this format : 2020-09-06T03:15:37.153
@@ -57,14 +54,17 @@ def parse_terms(title: str, body: str) -> dict:
     res = [i for i in re.split(
         "\s|[-,.!?<>()/=:]", re.sub(re.compile('<.*?>'), ' ', title)+re.sub(re.compile('<.*?>'), ' ', body)) if len(i) > 2 and i != '"']
 
-    return {(str)(idx): val for idx, val in enumerate(dict.fromkeys(res))}
+    # return {(idx, val) for idx, val in enumerate(dict.fromkeys(res))}
+    return list(dict.fromkeys(res))
 
 
 def readJsonFile(fileName: str, key: str, isPost: bool, collection: collection.Collection):
     with open(fileName) as file:
         source  = ijson.items(file, key + '.row.item')
         if isPost:
-            collection.insert_many(tqdm(({**i,'terms': parse_terms(i.get('Title', ''), i.get('Body', ''))} for i in source), desc='Parsing ' + fileName), ordered=False)
+            collection.insert_many(tqdm(({**i,'Terms': parse_terms(i.get('Title', ''), i.get('Body', ''))} for i in source), desc='Parsing ' + fileName), ordered=False)
+            print('Creating indexes for Terms...')
+            postCol.create_index([('Terms', ASCENDING)])
         else:
             collection.insert_many(tqdm((i for i in source), desc='Parsing ' + fileName), ordered=False)
         print('Successfully stored ' + fileName + ' into the database.\n')
