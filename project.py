@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from re import findall
 from bson.son import SON
 import sys
 import datetime
@@ -14,12 +15,13 @@ import time
 
 anonymous = True
 userID = "ANONYMOUS"
-ROWS_TO_DISPLAY = 8
 client = None
 db = None
 postCol = tagsCol = votesCol = None
 
-post_maxId = tags_maxId = votes_maxId = None
+ROWS_TO_DISPLAY = 8
+REBUILD_DATABASE = False
+
 
 
 def drop_all():
@@ -53,10 +55,10 @@ def getCurrentDateTime():
     return datetime.datetime.now().isoformat()[:23]
 
 
-def parse_terms(title: str, body: str) -> dict:
-    """
-    Parse the terms for the terms array
-    """
+def parse_terms(title: str, body: str) -> list:
+    '''
+    Create terms for the given title and body.
+    '''
     res = [i for i in re.split(
         "\s|[-,.!?<>()/=:]", re.sub(re.compile('<.*?>'), ' ', title)+re.sub(re.compile('<.*?>'), ' ', body)) if len(i) > 2]
 
@@ -66,20 +68,23 @@ def parse_terms(title: str, body: str) -> dict:
     # return list(dict.fromkeys(res))
 
 
-    # terms = []
-    # seen = set()
-    # for i in res:
-    #     if i not in seen:
-    #         terms.append(i)
-    #         seen.add(i)
-    # return terms
+    terms = []
+    seen = set()
+    for i in res:
+        if i not in seen:
+            terms.append(i)
+            seen.add(i)
+    return terms
 
     
-    return list(set(res))
+    # return list(set(res))
     
 
 
 def readJsonFile(fileName: str, key: str, isPost: bool, collection: collection.Collection):
+    '''
+    Read and parse the json file, then store the data into the  given database.
+    '''
     with open(fileName) as file:
         source  = ijson.items(file, key + '.row.item')
         if isPost:
@@ -457,6 +462,48 @@ def createTable(lst:list):
     table.rows.header = [str(i) for i in range(1, count+1)]
     return table
 
+
+def find_average_score(user:None, post_type: str):
+    sum_score = 0
+    i = 0
+    post_str = ''
+    if post_type == '1':
+        post_str = 'question'
+    elif post_type == '2':
+        post_str = 'answer'
+    else:
+        print('Invalid post_type: expected 1 or 2, got', post_type)
+        return
+
+    for i, item in enumerate(postCol.find({'OwnerUserId':user, 'PostTypeId': post_type}, {'_id':0, 'Score':1}), 1):
+            sum_score += item['Score']
+
+    if i > 0:
+        print('User', user, 'owns', i, post_str + ', with an average score of', format(sum_score / i, '.2f'))
+    else:
+        print('User', user, 'has 0', post_str)
+
+
+def report(id):
+    userID = id
+    if userID:
+        print('---REPORT---')
+        find_average_score(userID, '1')
+        find_average_score(userID, '2')
+
+        i = 0
+        for i, item in enumerate(postCol.find({'OwnerUserId':userID, 'PostTypeId': '2'}, {'_id':0, 'Score':1}), 1):
+            continue
+        print('User', userID, 'owns', i, 'votes.')
+    else:
+        print('No')
+        
+        
+
+
+
+
+
 def display(lst:list):
     '''
     This function is responsible for getting all
@@ -654,6 +701,10 @@ def menu():
 # getMaxID(postCol)
 
 def connect_db():
+    '''
+    Connect to the database with a port number from commandline argument.
+    If no port number is given, the program auto connects to port 27017
+    '''
     global client, db, postCol, tagsCol, votesCol
     if len(sys.argv) > 1:
         if sys.argv[1].isnumeric():
@@ -675,8 +726,11 @@ def connect_db():
 
 
 def store_data():
+    '''
+    Store all data into the database.
+    '''
     global post_maxId, votes_maxId, tags_maxId
-
+    
     print('-------Start building-------')
     start = time.time()
     readJsonFile('Posts.json', 'posts', True, postCol)
@@ -695,14 +749,13 @@ def store_data():
     print(post_maxId, votes_maxId, tags_maxId)
 def main():
     connect_db()
-    # drop_all()
-    # store_data()
-    # log_in()
-    # getMaxID(postCol)
+    if REBUILD_DATABASE:
+        drop_all()
+        store_data()
+    # search()
+    for i in range(20000):
+        report(str(i))
 
-    # print(post_maxId)
-    # print(get_max_id(votesCol))
-    # print(get_max_id(tagsCol))
 
 if __name__ == "__main__":
     main()

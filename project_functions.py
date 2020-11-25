@@ -47,6 +47,6 @@ def exit_program():
     Exit the program.
     '''
 
-    print('Bye! :)')
+    print('Bye! Stay safe! :)')
     exit(0)
     client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/<dbname>?retryWrites=true&w=majority")
