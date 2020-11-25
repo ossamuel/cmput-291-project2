@@ -1,2 +1,4 @@
 beautifultable==1.0.0
 pymongo==3.11.1
+tqdm==4.53.0
+ijson==3.1.3

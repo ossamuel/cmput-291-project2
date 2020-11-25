@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from bson.son import SON
 import sys
 import datetime
 from pymongo import MongoClient, ASCENDING, DESCENDING, collection
@@ -18,6 +19,7 @@ client = None
 db = None
 postCol = tagsCol = votesCol = None
 
+post_maxId = tags_maxId = votes_maxId = None
 
 
 def drop_all():
@@ -33,10 +35,10 @@ def drop_all():
     if "Votes" in colList:
        db.Votes.drop()
 
-# Three collections (table) (Posts, Tags, Votes)
 
 
 def delete_all(collection):
+    # Three collections (table) (Posts, Tags, Votes)
     """
     Delete all document in a collection
     Delete all rows in a table (SQL Version)
@@ -142,7 +144,7 @@ def post():
     text fields are filled and meet proper requirements
     """
 
-    global userID
+    global userID, post_maxId
 
     print("\nMAKE A POST")
     title = body = ''
@@ -182,7 +184,7 @@ def post():
         s += "<"+str(tag[i])+">"
     body = "<p>"+body+"</p>"
     post_q = {
-         "Id":  getMaxID(postCol) + 1,
+         "Id":  str(post_maxId + 1),
          "OwnerUserId": userID,
          "Title": title,
          "Body": body,
@@ -196,12 +198,13 @@ def post():
          "FavoriteCount": 0,
          "ContentLicense": "CC BY-SA 2.5"
     }
+
+    post_maxId += 1
+
     postCol.insert_one(post_q)
     print('Successfully made a post.\n')
 
 
-# delete_all(votesCol)
-# delete_all(tagsCol)
 def search():
     '''
     This function is responsible for searching for a post 
@@ -270,15 +273,39 @@ def getMaxID(collection):
 
     # })
 
+    pipeline = [
+        {"$sort": SON([("Id", -1)])},
+        {"$limit": 1}
+    ]
+
+    print(collection.aggregate(pipeline, collation={"locale": "en_US", "numericOrdering": False}))
+    
+def get_max_id(collection):
+    # result = max(list(map(int, list(collection.find({}, {"Id": 1})))))
+    # result = list(collection.find({}, {"Id": 1}))
+    result = collection.find({}, {"Id": 1, "_id": 0})
+    lst = []
+    for i in result:
+        lst.append(int(i["Id"]))
+
+    # max = 0
+    # for i in result:
+    #     if int(i["Id"]) > max:
+    #         max = int(i["Id"])
+    # return max
+    return max(lst)
+
 def answer(questionID):
     """
     Answer the question by providing a text
     """
 
-    text = input(f"Enter an answer for {questionID}: ")
+    global post_maxId
+
+    text = input("Enter an answer for {}: ".format(questionID))
 
     answerDict = {
-        "Id": str(int(getMaxID(postCol)) + 1),
+        "Id": str(post_maxId + 1),
         "PostTypeId": "2",
         "ParentId": questionID,
         "CreationDate": getCurrentDateTime(),
@@ -289,6 +316,8 @@ def answer(questionID):
         "CommentCount": 0,
         "ContentLicense": "CC BY-SA 2.5"
       }
+
+    post_maxId += 1
 
     # Add the answer to the db
     postCol.insert_one(answerDict)
@@ -352,14 +381,14 @@ def vote(postId):
     Vote on a selected question
     Anonymous users can vote with no constraint
     """
-    global userID
+    global userID, votes_maxId
 
     vote = None
 
     if anonymous:
 
         vote =  {
-            "Id": getMaxID(votesCol),
+            "Id": str(votes_maxId + 1),
             "PostId": postId,
             "VoteTypeId": "2",
             "CreationDate": getCurrentDateTime()
@@ -372,7 +401,7 @@ def vote(postId):
             print("You can not vote more than once on a post! \n")
             return
         vote =  {
-            "Id": str(getMaxID(votesCol)),
+            "Id": str(votes_maxId + 1),
             "PostId": postId,
             "VoteTypeId": "2",
             "UserId": userID,
@@ -385,11 +414,10 @@ def vote(postId):
     # Insert the vote
     votesCol.insert_one(vote)
 
+    votes_maxId += 1
+
     print("Your vote for {} has been successfully casted.".format(postId))
 
-
-# answer(12345, 14141)
-# print(getMaxID(tagsCol))
 
 def seeAllFields(postId):
     """
@@ -554,7 +582,7 @@ def log_in():
         userID = uid
         anonymous = False
 
-    print(f"Welcome back, {userID}")
+    print("Welcome back, {}".format(userID))
     menu()
 
 
@@ -570,8 +598,8 @@ def menu():
     global userID
 
     while True:
-        print(f'\n*** LOGGED IN AS [{userID}] ***\nChoose an option: \n1. Post a Question \
-        \n2. Search for questions \n3. Log out\n0. Exit\n')
+        print("\n*** LOGGED IN AS [{}] ***\nChoose an option: \n1. Post a Question \n2. Search\
+        for questions\n3. Answer a question \n4. List Answers \n5. Log out\n0. Exit\n".format(userID))
         inp = input('Please enter a command: ')
         if inp == '1':
             post()
@@ -647,25 +675,34 @@ def connect_db():
 
 
 def store_data():
+    global post_maxId, votes_maxId, tags_maxId
+
     print('-------Start building-------')
     start = time.time()
     readJsonFile('Posts.json', 'posts', True, postCol)
-    # readJsonFile('Tags.json', 'tags', False, tagsCol)
-    # readJsonFile('Votes.json', 'votes', False, votesCol)
+    readJsonFile('Tags.json', 'tags', False, tagsCol)
+    readJsonFile('Votes.json', 'votes', False, votesCol)
     
     total = (int)(time.time() - start)
 
     print('\nTotal time spent: ' + (str)(total // 60) + 'min ' + (str)(total % 60) + 'sec')
     print('-------End building-------')
     
+    post_maxId = get_max_id(postCol)
+    votes_maxId = get_max_id(votesCol)
+    tags_maxId = get_max_id(tagsCol)
 
-
+    print(post_maxId, votes_maxId, tags_maxId)
 def main():
     connect_db()
-    drop_all()
-    store_data()
-    log_in()
+    # drop_all()
+    # store_data()
+    # log_in()
+    # getMaxID(postCol)
 
+    # print(post_maxId)
+    # print(get_max_id(votesCol))
+    # print(get_max_id(tagsCol))
 
 if __name__ == "__main__":
     main()
