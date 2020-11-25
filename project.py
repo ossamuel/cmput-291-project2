@@ -600,8 +600,11 @@ def connect_db():
             exit(1)
     else:
         # For development use
-        client = MongoClient('localhost', 27017)
-        
+        # client = MongoClient('localhost', 27017)
+        client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/291db?retryWrites=true&w=majority")
+
+
+
     db = client["291db"]
     postCol = db["Posts"]
     tagsCol = db["Tags"]
@@ -624,8 +627,9 @@ def store_data():
 
 def main():
     connect_db()
-    drop_all()
-    store_data()
+    # drop_all()
+    # store_data()
+    search()
 
 
 if __name__ == "__main__":
