@@ -549,10 +549,10 @@ def actions(postId):
         print('0. Return to search result. ')
         inp = input('Please enter a command: ')
 
-        if int(inp) == 1 and inp in '123456789'[:len(options)]:
+        if inp in '123456789'[:len(options)]  and int(inp) == 1:
             options[int(inp) - 1](postId)
-        elif len(inp) == 1 and inp in '123456789'[:len(options)]:
-            options[int(inp) - 1](postId)
+        # elif len(inp) == 1 and inp in '123456789'[:len(options)]:
+        #     options[int(inp) - 1](postId)
         elif inp == '0':
             return
         else:
