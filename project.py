@@ -323,7 +323,11 @@ def vote(postId):
         }
 
     else:
-        
+        #check if user has voted already on the post
+        row = votesCol.find_one({"Id": str(postId), "UserId": str(userID)})
+        if row:
+            print("You can not vote more than once on a post! \n")
+            return
         vote =  {
             "Id": getMaxID(votesCol),
             "PostId": postId,
