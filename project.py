@@ -53,10 +53,25 @@ def getCurrentDateTime():
 
 def parse_terms(title: str, body: str) -> dict:
     res = [i for i in re.split(
-        "\s|[-,.!?<>()/=:]", re.sub(re.compile('<.*?>'), ' ', title)+re.sub(re.compile('<.*?>'), ' ', body)) if len(i) > 2 and i != '"']
+        "\s|[-,.!?<>()/=:]", re.sub(re.compile('<.*?>'), ' ', title)+re.sub(re.compile('<.*?>'), ' ', body)) if len(i) > 2]
 
     # return {(idx, val) for idx, val in enumerate(dict.fromkeys(res))}
-    return list(dict.fromkeys(res))
+
+
+    # return list(dict.fromkeys(res))
+
+
+    # terms = []
+    # seen = set()
+    # for i in res:
+    #     if i not in seen:
+    #         terms.append(i)
+    #         seen.add(i)
+    # return terms
+
+    
+    return list(set(res))
+    
 
 
 def readJsonFile(fileName: str, key: str, isPost: bool, collection: collection.Collection):
@@ -608,8 +623,8 @@ def connect_db():
             exit(1)
     else:
         # For development use
-        # client = MongoClient('localhost', 27017)
-        client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/291db?retryWrites=true&w=majority")
+        client = MongoClient('localhost', 27017)
+        # client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/291db?retryWrites=true&w=majority")
 
 
 
@@ -623,8 +638,8 @@ def store_data():
     print('-------Start building-------')
     start = time.time()
     readJsonFile('Posts.json', 'posts', True, postCol)
-    readJsonFile('Tags.json', 'tags', False, tagsCol)
-    readJsonFile('Votes.json', 'votes', False, votesCol)
+    # readJsonFile('Tags.json', 'tags', False, tagsCol)
+    # readJsonFile('Votes.json', 'votes', False, votesCol)
     
     total = (int)(time.time() - start)
 
