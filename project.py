@@ -3,7 +3,7 @@ from re import findall
 from bson.son import SON
 import sys
 import datetime
-from pymongo import MongoClient, ASCENDING, DESCENDING, collection
+from pymongo import MongoClient, collection
 from pymongo.collation import Collation
 import json
 import re
@@ -12,6 +12,7 @@ from project_functions import *
 import ijson
 from tqdm import tqdm
 import time
+import string
 
 
 userID = None
@@ -20,9 +21,10 @@ db = None
 postCol = tagsCol = votesCol = None
 
 ROWS_TO_DISPLAY = 8
-REBUILD_DATABASE = True
+REBUILD_DATABASE = False
 
 tags_maxId = post_maxId = votes_maxId = None
+
 
 def drop_all():
     """
@@ -55,12 +57,14 @@ def getCurrentDateTime():
     return datetime.datetime.now().isoformat()[:23]
 
 
-def parse_terms(title: str, body: str) -> list:
+def parse_terms(title: str, body: str, tags: str) -> list:
     '''
     Create terms for the given title and body.
     '''
-    res = [i for i in re.split(
-        "\s|[-,.!?<>()/=:]", re.sub(re.compile('<.*?>'), ' ', title)+re.sub(re.compile('<.*?>'), ' ', body)) if len(i) > 2]
+    # res = [i.lower() for i in re.split(
+    #     "\s|[-,.!?<>()/=:]", re.sub(re.compile('<.*?>'), ' ', title)+ ' ' + re.sub(re.compile('<.*?>'), ' ', body)) if len(i) > 2]
+
+    res = [i for i in (title + ' ' + body + ' ' + tags).lower().translate(str.maketrans(string.punctuation + '\n', ' ' * (len(string.punctuation)+1))).split(' ') if len(i) > 2]
 
     # return {(idx, val) for idx, val in enumerate(dict.fromkeys(res))}
 
@@ -88,9 +92,9 @@ def readJsonFile(fileName: str, key: str, isPost: bool, collection: collection.C
     with open(fileName) as file:
         source  = ijson.items(file, key + '.row.item')
         if isPost:
-            collection.insert_many(tqdm(({**i,'Terms': parse_terms(i.get('Title', ''), i.get('Body', ''))} for i in source), desc='Parsing ' + fileName), ordered=False)
+            collection.insert_many(tqdm(({**i,'Terms': parse_terms(i.get('Title', ''), i.get('Body', ''), i.get('Tags', ''))} for i in source), desc='Parsing ' + fileName), ordered=False)
             print('Creating indexes for Terms...')
-            postCol.create_index([('Terms', ASCENDING)])
+            postCol.create_index([('Terms', 'text')])
         else:
             collection.insert_many(tqdm((i for i in source), desc='Parsing ' + fileName), ordered=False)
         print('Successfully stored ' + fileName + ' into the database.\n')
@@ -227,11 +231,10 @@ def search():
   
     for keyword in ask:
         if len(keyword) >= 3:
-            user_doc = postCol.find({"Terms": re.compile('^' + re.escape(keyword) + '$', re.IGNORECASE)})
-            for x in user_doc:
-                if x is not None:
-                    result.append(x)
-                 
+            for i in postCol.find({"$text": {"$search": keyword.lower()}}):
+                if i:
+                    result.append(i)
+
         #for keywords of length 2 or less 
         #we search the fields: title, body and tag
         else:
@@ -243,7 +246,8 @@ def search():
                 ]
             })
             for x in user_doc:
-                if x is not None:
+                if x:
+                    # print(x.get("Id"))
                     result.append(x)
                      
     display(result)
@@ -435,8 +439,7 @@ def find_average_score(user:None, post_type: str):
         print('User', user, 'has 0', post_str)
 
 
-def report(id):
-    userID = id
+def report():
     if userID:
         print('---REPORT---')
         find_average_score(userID, '1')
@@ -445,9 +448,7 @@ def report(id):
         i = 0
         for i, item in enumerate(postCol.find({'OwnerUserId':userID, 'PostTypeId': '2'}, {'_id':0, 'Score':1}), 1):
             continue
-        print('User', userID, 'owns', i, 'votes.')
-    else:
-        print('No')
+        print('User', userID, 'owns', i, 'votes.\n')
         
         
 
@@ -577,11 +578,12 @@ def log_in():
 
     if res:
         userID = uid
-        print("Welcome back, {}".format(userID))
-        report(uid)
+        print("Welcome back, user {}".format(userID))
+        report()
         menu()
 
     elif len(uid) == 0:
+        print("Welcome Guest User.")
         menu()
 
     else:
@@ -599,16 +601,25 @@ def menu():
 
     global userID
 
+    login_str = 'in'
     while True:
-        print("\n*** LOGGED IN AS [{}] ***\nChoose an option: \n1. Post a Question \
-        \n2. Search for questions\n3. Log out\n0. Exit\n".format(userID))
+        
+        if userID:
+            login_str = 'out'
+        else:
+            login_str = "in"
+        print("Choose an option: \n1. Post a Question \
+        \n2. Search for questions\n3. Log " + login_str + "\n0. Exit\n")
         inp = input('Please enter a command: ')
         if inp == '1':
             post()
         elif inp == '2':
             search()
         elif inp == '3':
-            log_out()
+            if userID:
+                log_out()
+            else:
+                log_in()
         elif inp == '0':
             exit_program()
         else:
