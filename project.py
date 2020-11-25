@@ -61,13 +61,7 @@ def parse_terms(title: str, body: str, tags: str) -> list:
     '''
     Create terms for the given title and body.
     '''
-    # res = [i.lower() for i in re.split(
-    #     "\s|[-,.!?<>()/=:]", re.sub(re.compile('<.*?>'), ' ', title)+ ' ' + re.sub(re.compile('<.*?>'), ' ', body)) if len(i) > 2]
-
     res = [i for i in (title + ' ' + body + ' ' + tags).lower().translate(str.maketrans(string.punctuation + '\n', ' ' * (len(string.punctuation)+1))).split(' ') if len(i) > 2]
-
-    # return {(idx, val) for idx, val in enumerate(dict.fromkeys(res))}
-    # return list(dict.fromkeys(res))
 
     terms = []
     seen = set()
@@ -76,9 +70,6 @@ def parse_terms(title: str, body: str, tags: str) -> list:
             terms.append(i)
             seen.add(i)
     return terms
-
-    # return list(set(res))
-    
 
 
 def readJsonFile(fileName: str, key: str, isPost: bool, collection: collection.Collection):
@@ -531,7 +522,8 @@ def log_out():
 
 def log_in():
     '''
-    login given user id is given 
+    login given user id is given and also possible
+    if anonymous user (guest user)
     '''
     global userID
 
@@ -610,9 +602,7 @@ def connect_db():
         # For development use
         client = MongoClient('localhost', 27017)
 
-        # MongoDB Online Instance
-        # client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/291db?retryWrites=true&w=majority")
-
+       
 
 
     db = client["291db"]
