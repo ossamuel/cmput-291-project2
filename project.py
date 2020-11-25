@@ -1,14 +1,11 @@
 import datetime
-from pymongo import MongoClient, ASCENDING, DESCENDING
+from pymongo import MongoClient, ASCENDING, DESCENDING, collection
 from pymongo.collation import Collation
 import json
 import re
 from beautifultable import BeautifulTable
-<<<<<<< Updated upstream
-# from project_functions import *
-=======
+from project_functions import *
 import ijson
->>>>>>> Stashed changes
 
 anonymous = True
 userID = "ANONYMOUS"
@@ -74,14 +71,14 @@ def parse_terms(title="", body=""):
 
 # key in ["posts", "tags", "votes"]
 
-def readJsonFile(fileName: str, key: str, isPost: bool, collection: pymongo.collection.Collection):
+def readJsonFile(fileName: str, key: str, isPost: bool, collection: collection.Collection):
     with open(fileName) as file:
-        count = 0
         for item in ijson.items(file, key + '.row.item'):
+            # if isPost:
+            #     getTags(item.get('Title', ''))
             print(item)
-        count +=1
-        if count == 5:
-            return
+
+            
 
 def fromJsonFile(fileName, key, isPost, collection):
     """
@@ -248,7 +245,6 @@ def answer(questionID, userID):
     """
     Answer the question by providing a text
     """
-    global userID
 
     text = input(f"Enter an answer for {questionID}: ")
 
@@ -564,7 +560,6 @@ def menu():
 def main():
     # print(getMaxID(postCol))
     # fromJsonFile("Posts.json", "posts", True, postCol)
-    # fromJsonFile("Tags.json", "tags", False, tagsCol)
     # fromJsonFile("Votes.json", "votes", False, votesCol)
     print(type(postCol))
 if __name__ == "__main__":
@@ -577,14 +572,13 @@ if __name__ == "__main__":
 # list_answers("54")
 # login()
 
-<<<<<<< Updated upstream
 #delete_all(votesCol)
 #delete_all(tagsCol)
 #delete_all(postCol)
 
 
 
-
+# fromJsonFile("Tags.json", "tags", False, tagsCol)
 
 
 # seeAllFields("62059")
@@ -594,12 +588,13 @@ if __name__ == "__main__":
 # log_in()
 
 # getMaxID(postCol)
-=======
+
 def main():
     # readJsonFile('Posts.json', 'posts', True, postCol)
     # readJsonFile('Tags.json', 'tags', False, tagsCol)
-    readJsonFile('Votes.json', 'votes', False, votesCol)
+    # readJsonFile('Votes.json', 'votes', False, votesCol)
+    getTags("Write a program that supports the following operations on the MongoDB database created in Phase 1.")
 
 if __name__ == "__main__":
     main()
->>>>>>> Stashed changes
+
