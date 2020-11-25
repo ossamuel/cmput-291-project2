@@ -198,8 +198,7 @@ def search():
             for x in user_doc:
                 if x:
                     # print(x.get("Id"))
-                    result.append(x)
-                     
+                    result.append(x)             
     display(result)
  
 
@@ -272,7 +271,7 @@ def list_answers(questionID):
     # Check if there's an accepted answer for the specific post
     check = accId.get('AcceptedAnswerId', 0)
 
-    if check:
+    if check != 0:
         # Get the accepted answer post
         acceptedAnswer = postCol.find_one({"Id": str(accId.get('AcceptedAnswerId'))})
 
@@ -290,6 +289,7 @@ def list_answers(questionID):
         table.rows.header = [str(i) for i in range(1, count+1)]
 
     print(table)
+
 
 
 def vote(postId):
