@@ -43,9 +43,6 @@ def delete_all(collection):
     collection.delete_many({})
 
 
-def insert_one(collection, document):
-    collection.insert_one(document)
-
 def getCurrentDateTime():
     """
     Follows this format : 2020-09-06T03:15:37.153
@@ -66,7 +63,7 @@ def readJsonFile(fileName: str, key: str, isPost: bool, collection: collection.C
         source  = ijson.items(file, key + '.row.item')
         if isPost:
             collection.insert_many(tqdm(({**i,'Terms': parse_terms(i.get('Title', ''), i.get('Body', ''))} for i in source), desc='Parsing ' + fileName), ordered=False)
-            print('Creating indexes for Terms.')
+            print('Creating indexes for Terms...')
             postCol.create_index([('Terms', ASCENDING)])
         else:
             collection.insert_many(tqdm((i for i in source), desc='Parsing ' + fileName), ordered=False)
@@ -146,20 +143,6 @@ def post():
             # no tag entered by user
             break
     tag = tag.split()
-    for y in tag:
-        tag_occur = tagsCol.find_one({"TagName": str(y)})
-        #if a user provided tag exists in collection
-        if tag_occur:
-            tagsCol.update_one({"Id": tag_occur.get('Id')}, {"$inc": {"Count": 1}})
-        #if user tag does not exit in Tags collection
-        #  - add as new row with unique id and count 1
-        else:
-            tag_q = {
-            "Id":  str(getMaxID(tagsCol) + 1),
-            "TagName": str(y),
-            "Count": 1,
-            }
-            tagsCol.insert_one(tag_q)
     n = len(tag)
     s = ""
     for i in range(n):
@@ -630,7 +613,7 @@ def store_data():
     start = time.time()
     readJsonFile('Posts.json', 'posts', True, postCol)
     readJsonFile('Tags.json', 'tags', False, tagsCol)
-    # readJsonFile('Votes.json', 'votes', False, votesCol)
+    readJsonFile('Votes.json', 'votes', False, votesCol)
     
     total = (int)(time.time() - start)
 
