@@ -20,9 +20,9 @@ db = None
 postCol = tagsCol = votesCol = None
 
 ROWS_TO_DISPLAY = 8
-REBUILD_DATABASE = False
+REBUILD_DATABASE = True
 
-
+tags_maxId = post_maxId = votes_maxId = None
 
 def drop_all():
     """
@@ -149,7 +149,7 @@ def post():
     text fields are filled and meet proper requirements
     """
 
-    global userID, post_maxId
+    global userID, post_maxId, tags_maxId
 
     print("\nMAKE A POST")
     title = body = ''
@@ -178,7 +178,7 @@ def post():
         #  - add as new row with unique id and count 1
         else:
             tag_q = {
-            "Id":  str(getMaxID(tagsCol) + 1),
+            "Id":  str(tags_maxId + 1),
             "TagName": str(y),
             "Count": 1,
             }
@@ -375,9 +375,11 @@ def list_answers(questionID):
             table.rows.append([answer["Body"][0:80], answer["CreationDate"], answer["Score"]])
             count += 1
     
-    table.rows.header = [str(i) for i in range(1, count+2)]
+    if check:
+        table.rows.header = [str(i) for i in range(1, count+2)]
+    else:
+        table.rows.header = [str(i) for i in range(1, count+1)]
 
-    print(answers.__dict__)
     print(table)
 
 
@@ -401,7 +403,7 @@ def vote(postId):
 
     else:
         #check if user has voted already on the post
-        row = votesCol.find_one({"Id": str(postId), "UserId": str(userID)})
+        row = votesCol.find_one({"PostId": str(postId), "UserId": str(userID)})
         if row:
             print("You can not vote more than once on a post! \n")
             return
@@ -436,10 +438,7 @@ def seeAllFields(postId):
 
     print("\n{:>52}".format("ALL FIELDS FOR ANSWER " + postId))
 
-    # table.columns.header = ["Id", "Comment Count", "Content License", "Creation Date", "Favourite Count", "Body", "Last Activity Date", "Last Edit Date", "Last Editor UserID", "Owner User ID", "Post Type ID", "Score", "Tags", "Title", "ViewCount"]
     table.columns.header = ["Value"]
-    # lst = [row["Id"], row["CommentCount"], row["ContentLicense"], row["CreationDate"], row["FavouriteCount"], row["Body"], row["LastActivityDate"], row["LastEditDate"], row["LastEditorUserId"], row["PostTypeId"], row["Score"], row["Tags"], row["Title"], row["ViewCount"]]
-   
 
     for k in row.keys():
         table.rows.append([row[k]])
@@ -599,7 +598,7 @@ def actions(postId):
         inp = input('Please enter a command: ')
 
         if int(inp) == 1 and inp in '123456789'[:len(options)]:
-            options[int(inp) - 1](postId,userID)
+            options[int(inp) - 1](postId)
         elif len(inp) == 1 and inp in '123456789'[:len(options)]:
             options[int(inp) - 1](postId)
         elif inp == '0':
@@ -623,15 +622,20 @@ def log_in():
     uid = input("Enter your user id (blank to skip): ")
     
     # Check if the user id exists
-    res = postCol.find_one({"UserId": str(uid)}).get("UserId")
+    res = postCol.find_one({"OwnerUserId": str(uid)})
 
     if res:
         userID = uid
+        print("Welcome back, {}".format(userID))
         anonymous = False
+        menu()
 
-    print("Welcome back, {}".format(userID))
-    menu()
+    elif len(uid) == 0:
+        print("Welcome back, {}".format(userID))
+        menu()
 
+    else:
+        log_in()
 
 def menu():
     """
@@ -645,8 +649,8 @@ def menu():
     global userID
 
     while True:
-        print("\n*** LOGGED IN AS [{}] ***\nChoose an option: \n1. Post a Question \n2. Search\
-        for questions\n3. Answer a question \n4. List Answers \n5. Log out\n0. Exit\n".format(userID))
+        print("\n*** LOGGED IN AS [{}] ***\nChoose an option: \n1. Post a Question \
+        \n2. Search for questions\n3. Log out\n0. Exit\n".format(userID))
         inp = input('Please enter a command: ')
         if inp == '1':
             post()
@@ -753,9 +757,9 @@ def main():
         drop_all()
         store_data()
     # search()
-    for i in range(20000):
-        report(str(i))
-
+    # for i in range(20000):
+    #     report(str(i))
+    log_in()
 
 if __name__ == "__main__":
     main()
