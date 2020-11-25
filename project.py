@@ -162,6 +162,20 @@ def post():
             # no tag entered by user
             break
     tag = tag.split()
+    for y in tag:
+        tag_occur = tagsCol.find_one({"TagName": str(y)})
+        #if a user provided tag exists in collection
+        if tag_occur:
+            tagsCol.update_one({"Id": tag_occur.get('Id')}, {"$inc": {"Count": 1}})
+        #if user tag does not exit in Tags collection
+        #  - add as new row with unique id and count 1
+        else:
+            tag_q = {
+            "Id":  str(getMaxID(tagsCol) + 1),
+            "TagName": str(y),
+            "Count": 1,
+            }
+            tagsCol.insert_one(tag_q)
     n = len(tag)
     s = ""
     for i in range(n):
