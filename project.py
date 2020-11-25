@@ -286,18 +286,15 @@ def getMaxID(collection):
     print(collection.aggregate(pipeline, collation={"locale": "en_US", "numericOrdering": False}))
     
 def get_max_id(collection):
-    # result = max(list(map(int, list(collection.find({}, {"Id": 1})))))
-    # result = list(collection.find({}, {"Id": 1}))
+    """
+    Get the max id of a collection
+    """
+
     result = collection.find({}, {"Id": 1, "_id": 0})
     lst = []
     for i in result:
         lst.append(int(i["Id"]))
 
-    # max = 0
-    # for i in result:
-    #     if int(i["Id"]) > max:
-    #         max = int(i["Id"])
-    # return max
     return max(lst)
 
 def answer(questionID):
@@ -330,15 +327,6 @@ def answer(questionID):
     print(">>> Your Answer (id#{}) for Question (id#{}) has been successfully added.".format(
         answerDict.get("Id"), questionID))
 
-    
-# print(datetime.datetime.now().isoformat())
-# print(postCol)
-
-
-# def generate_table(*args):
-#     table = BeautifulTable()
-#     table.columns.header = [i for i in args] 
-#     table.set_style(BeautifulTable.STYLE_BOX)
 
 def list_answers(questionID):
     """
@@ -371,7 +359,7 @@ def list_answers(questionID):
         table.rows.append([acceptedAnswer["Body"][0:80] + " " + "\u2605", acceptedAnswer["CreationDate"], acceptedAnswer["Score"]])
     
     for answer in answers:
-        if int(answer["Id"]) != int(accId.get('AcceptedAnswerId')): 
+        if int(answer["Id"]) != int(check): 
             table.rows.append([answer["Body"][0:80], answer["CreationDate"], answer["Score"]])
             count += 1
     
@@ -628,6 +616,7 @@ def log_in():
         userID = uid
         print("Welcome back, {}".format(userID))
         anonymous = False
+        report(uid)
         menu()
 
     elif len(uid) == 0:
@@ -750,7 +739,6 @@ def store_data():
     votes_maxId = get_max_id(votesCol)
     tags_maxId = get_max_id(tagsCol)
 
-    print(post_maxId, votes_maxId, tags_maxId)
 def main():
     connect_db()
     if REBUILD_DATABASE:
