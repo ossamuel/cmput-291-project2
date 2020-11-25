@@ -1,3 +1,4 @@
+from abc import abstractmethod
 import sys
 import datetime
 from pymongo import MongoClient, ASCENDING, DESCENDING, collection
@@ -218,9 +219,16 @@ def getMaxID(collection):
     """
     Get the maximum id of a document in a collection
     """
-    # return collection.find_one(sort=[("Id": {"$toInt": "Id"}, DESCENDING)])["Id"]
-    return collection.find().sort("Id").collation(Collation(locale="en_US", numericOrdering=True))
+    max = 0
+    # return collection.find_one(sort=[("_id", DESCENDING)])
+    #return collection.find().sort([("Id", 1)]).collation({"locale": "en_US", "numericOrdering": True})["Id"]
+    # return collection.find_one(sort=[("Id", DESCENDING)])["Id"]
+    # return collection.find_one().sort("Id").collation(Collation(locale="en_US", numericOrdering=True))
+    # abc < abcd 
 
+    
+
+    # return collection.create_index({"Id": 1}, {"collation": {"locale": "en_US", "numericOrdering": False}}).collation({"locale": "en_US", "numericOrdering": False}).find().sort(["Id", DESCENDING])
     # return collection.aggregate({
     #     "$group":{
     #         "Id": '',
@@ -627,8 +635,8 @@ def store_data():
 
 def main():
     connect_db()
-    # drop_all()
-    # store_data()
+    drop_all()
+    store_data()
     search()
 
 
