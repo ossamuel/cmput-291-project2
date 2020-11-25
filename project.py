@@ -61,13 +61,7 @@ def parse_terms(title: str, body: str, tags: str) -> list:
     '''
     Create terms for the given title and body.
     '''
-    # res = [i.lower() for i in re.split(
-    #     "\s|[-,.!?<>()/=:]", re.sub(re.compile('<.*?>'), ' ', title)+ ' ' + re.sub(re.compile('<.*?>'), ' ', body)) if len(i) > 2]
-
     res = [i for i in (title + ' ' + body + ' ' + tags).lower().translate(str.maketrans(string.punctuation + '\n', ' ' * (len(string.punctuation)+1))).split(' ') if len(i) > 2]
-
-    # return {(idx, val) for idx, val in enumerate(dict.fromkeys(res))}
-    # return list(dict.fromkeys(res))
 
     terms = []
     seen = set()
@@ -76,9 +70,6 @@ def parse_terms(title: str, body: str, tags: str) -> list:
             terms.append(i)
             seen.add(i)
     return terms
-
-    # return list(set(res))
-    
 
 
 def readJsonFile(fileName: str, key: str, isPost: bool, collection: collection.Collection):
@@ -372,6 +363,9 @@ def createTable(lst:list):
 
 
 def find_average_score(user:None, post_type: str):
+    '''
+    find user average score
+    '''
     sum_score = 0
     i = 0
     post_str = ''
@@ -393,6 +387,12 @@ def find_average_score(user:None, post_type: str):
 
 
 def report():
+    '''
+    generate user report which includes:
+    the number of questions owned and the average score for those questions
+    the number of answers owned and the average score for those answers
+    the number of votes registered for the user.
+    '''
     if userID:
         print('---REPORT---')
         find_average_score(userID, '1')
@@ -446,8 +446,6 @@ def display(lst:list):
         print('\"0\": Return to main menu. ')
         inp = input('\nPlease enter a command: ')
         if lst and len(inp) == 1 and inp in '123456789'[:ROWS_TO_DISPLAY]:
-            # Select a post
-            # print('page: ', page[int(inp)-1].get("Title"))
             actions(page[int(inp)-1].get("Id"))
         elif lst and inp == 'p' and previous_page:
             # Previous
@@ -483,6 +481,9 @@ def allPostFields(postId):
     print(table)
 
 def actions(postId):
+    '''
+    actions to perform on selected post
+    '''
     global userID
     print("Selected Post:", postId)
     #increase view count by 1 after question is selected
@@ -520,6 +521,10 @@ def log_out():
 
 
 def log_in():
+    '''
+    login given user id is given and also possible
+    if anonymous user (guest user)
+    '''
     global userID
 
     print("LOGIN")
@@ -597,9 +602,7 @@ def connect_db():
         # For development use
         client = MongoClient('localhost', 27017)
 
-        # MongoDB Online Instance
-        # client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/291db?retryWrites=true&w=majority")
-
+       
 
 
     db = client["291db"]
