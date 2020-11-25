@@ -19,7 +19,7 @@ postCol = tagsCol = votesCol = None
 # client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/<dbname>?retryWrites=true&w=majority")
 
 # Local Mongoclient
-# client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient("mongodb://localhost:27017/")
 
 # Name of the database
 # db = client["291db"]
@@ -78,6 +78,7 @@ def readJsonFile(fileName: str, key: str, isPost: bool, collection: collection.C
         for item in tqdm(ijson.items(file, key + '.row.item')):
             # if isPost:
             #     getTags(item.get('Title', ''))
+            # print(item)
             collection.insert_one(item)
 
             
@@ -297,10 +298,12 @@ def list_answers(questionID):
 
     table.set_style(BeautifulTable.STYLE_BOX)
 
-    accId = postCol.find_one({"Id": questionID}, {"AcceptedAnswerId"})
+    accId = postCol.find_one({"Id": questionID})
     
     # Check if there's an accepted answer for the specific post
-    if accId.get('AcceptedAnswerId'):
+    check = accId.get('AcceptedAnswerId', 0)
+
+    if check:
         # Get the accepted answer post
         acceptedAnswer = postCol.find_one({"Id": str(accId.get('AcceptedAnswerId'))})
 
@@ -313,6 +316,8 @@ def list_answers(questionID):
             count += 1
     
     table.rows.header = [str(i) for i in range(1, count+2)]
+
+    print(answers.__dict__)
     print(table)
 
 
@@ -560,6 +565,21 @@ def menu():
 
 
 # def main():
+#     # print(getMaxID(postCol))
+#     # fromJsonFile("Posts.json", "posts", True, postCol)
+#     # fromJsonFile("Votes.json", "votes", False, votesCol)
+#     print(type(postCol))
+# if __name__ == "__main__":
+#     main()
+# def main():
+#     # print(getMaxID(postCol))
+#     # fromJsonFile("Posts.json", "posts", True, postCol)
+#     # fromJsonFile("Tags.json", "tags", False, tagsCol)
+#     # fromJsonFile("Votes.json", "votes", False, votesCol)
+#     print(type(postCol))
+
+
+# def main():
 #     log_in()
 
 
@@ -603,11 +623,11 @@ def connect_db():
 
 def main():
     connect_db()
-    drop_all()
-    readJsonFile('Posts.json', 'posts', True, postCol)
+    # drop_all()
+    # readJsonFile('Posts.json', 'posts', True, postCol)
     # readJsonFile('Tags.json', 'tags', False, tagsCol)
     # readJsonFile('Votes.json', 'votes', False, votesCol)
     # getTags("Write a program that supports the following operations on the MongoDB database created in Phase 1.")
-
+    list_answers("1")
 if __name__ == "__main__":
     main()
