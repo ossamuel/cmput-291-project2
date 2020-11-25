@@ -1,5 +1,6 @@
 import datetime
-from pymongo import MongoClient, ASCENDING, DESCENDING, collection
+import pymongo
+from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.collation import Collation
 import json
 import re
@@ -60,7 +61,7 @@ def getCurrentDateTime():
 
 def parse_terms(title="", body=""):
     new_string = [i for i in re.split(
-        "\s|[,.!?<>()/=:]", title+body) if len(i) > 2 and i != '"']
+        "\s|[-,.!?<>()/=:]", re.sub(re.compile('<.*?>'), ' ', title)+re.sub(re.compile('<.*?>'), ' ', body)) if len(i) > 2 and i != '"']
     no_duplicate = []
 
     for i in new_string:
@@ -241,7 +242,7 @@ def getMaxID(collection):
 
     # })
 
-def answer(questionID, userID):
+def answer(questionID):
     """
     Answer the question by providing a text
     """
@@ -564,6 +565,13 @@ def main():
     print(type(postCol))
 if __name__ == "__main__":
     main()
+# def main():
+#     # print(getMaxID(postCol))
+#     # fromJsonFile("Posts.json", "posts", True, postCol)
+#     # fromJsonFile("Tags.json", "tags", False, tagsCol)
+#     # fromJsonFile("Votes.json", "votes", False, votesCol)
+#     print(type(postCol))
+
 
 # def main():
 #     log_in()
@@ -598,3 +606,4 @@ def main():
 if __name__ == "__main__":
     main()
 
+print(parse_terms('<span class="media-body ">28 September - 4 October, AD-CD </span><p>123</p>45'))
