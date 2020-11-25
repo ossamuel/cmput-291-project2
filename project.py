@@ -15,16 +15,7 @@ ROWS_TO_DISPLAY = 8
 client = None
 db = None
 postCol = tagsCol = votesCol = None
-# Mongoclient object (Online)
-# client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/<dbname>?retryWrites=true&w=majority")
 
-# Local Mongoclient
-client = MongoClient("mongodb://localhost:27017/")
-
-# Name of the database
-# db = client["291db"]
-
-# List of collections
 
 
 def drop_all():
@@ -75,11 +66,11 @@ def parse_terms(title="", body=""):
 
 def readJsonFile(fileName: str, key: str, isPost: bool, collection: collection.Collection):
     with open(fileName) as file:
-        for item in tqdm(ijson.items(file, key + '.row.item')):
-            # if isPost:
-            #     getTags(item.get('Title', ''))
-            # print(item)
-            collection.insert_one(item)
+        # for item in tqdm(ijson.items(file, key + '.row.item')):
+        #     # if isPost:
+        #     #     getTags(item.get('Title', ''))
+        #     collection.insert_one(item)
+        collection.insert_many(tqdm(ijson.items(file, key + '.row.item')), ordered=False)
 
             
 
@@ -623,11 +614,11 @@ def connect_db():
 
 def main():
     connect_db()
-    # drop_all()
-    # readJsonFile('Posts.json', 'posts', True, postCol)
-    # readJsonFile('Tags.json', 'tags', False, tagsCol)
-    # readJsonFile('Votes.json', 'votes', False, votesCol)
+    drop_all()
+    readJsonFile('Posts.json', 'posts', True, postCol)
+    readJsonFile('Tags.json', 'tags', False, tagsCol)
+    readJsonFile('Votes.json', 'votes', False, votesCol)
     # getTags("Write a program that supports the following operations on the MongoDB database created in Phase 1.")
-    list_answers("1")
+  #  list_answers("1")
 if __name__ == "__main__":
     main()
