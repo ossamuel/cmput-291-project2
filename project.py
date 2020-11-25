@@ -1,24 +1,28 @@
+import sys
 import datetime
-import pymongo
-from pymongo import MongoClient, ASCENDING, DESCENDING
+from pymongo import MongoClient, ASCENDING, DESCENDING, collection
 from pymongo.collation import Collation
 import json
 import re
 from beautifultable import BeautifulTable
 from project_functions import *
 import ijson
+from tqdm import tqdm
 
 anonymous = True
 userID = "ANONYMOUS"
 ROWS_TO_DISPLAY = 8
+client = None
+db = None
+postCol = tagsCol = votesCol = None
 # Mongoclient object (Online)
-client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/<dbname>?retryWrites=true&w=majority")
+# client = MongoClient("mongodb+srv://cmput291:4B5VzRRSNz81cvqz@cmput291.7yrbk.mongodb.net/<dbname>?retryWrites=true&w=majority")
 
 # Local Mongoclient
 # client = MongoClient("mongodb://localhost:27017/")
 
 # Name of the database
-db = client["291db"]
+# db = client["291db"]
 
 # List of collections
 
@@ -37,9 +41,6 @@ def drop_all():
        db.Votes.drop()
 
 # Three collections (table) (Posts, Tags, Votes)
-postCol = db["Posts"]
-tagsCol = db["Tags"]
-votesCol = db["Votes"]
 
 
 def delete_all(collection):
@@ -74,10 +75,10 @@ def parse_terms(title="", body=""):
 
 def readJsonFile(fileName: str, key: str, isPost: bool, collection: collection.Collection):
     with open(fileName) as file:
-        for item in ijson.items(file, key + '.row.item'):
+        for item in tqdm(ijson.items(file, key + '.row.item')):
             # if isPost:
             #     getTags(item.get('Title', ''))
-            print(item)
+            collection.insert_one(item)
 
             
 
@@ -558,21 +559,6 @@ def menu():
     return 
 
 
-def main():
-    # print(getMaxID(postCol))
-    # fromJsonFile("Posts.json", "posts", True, postCol)
-    # fromJsonFile("Votes.json", "votes", False, votesCol)
-    print(type(postCol))
-if __name__ == "__main__":
-    main()
-# def main():
-#     # print(getMaxID(postCol))
-#     # fromJsonFile("Posts.json", "posts", True, postCol)
-#     # fromJsonFile("Tags.json", "tags", False, tagsCol)
-#     # fromJsonFile("Votes.json", "votes", False, votesCol)
-#     print(type(postCol))
-
-
 # def main():
 #     log_in()
 
@@ -597,13 +583,31 @@ if __name__ == "__main__":
 
 # getMaxID(postCol)
 
+def connect_db():
+    global client, db, postCol, tagsCol, votesCol
+    if len(sys.argv) > 1:
+        if sys.argv[1].isnumeric():
+            client = MongoClient('localhost', int(sys.argv[1]))
+        else:
+            print('Given port is not a number! ')
+            exit(1)
+    else:
+        # For development use
+        client = MongoClient('localhost', 27017)
+        
+    db = client["291db"]
+    postCol = db["Posts"]
+    tagsCol = db["Tags"]
+    votesCol = db["Votes"]
+
+
 def main():
-    # readJsonFile('Posts.json', 'posts', True, postCol)
+    connect_db()
+    drop_all()
+    readJsonFile('Posts.json', 'posts', True, postCol)
     # readJsonFile('Tags.json', 'tags', False, tagsCol)
     # readJsonFile('Votes.json', 'votes', False, votesCol)
-    getTags("Write a program that supports the following operations on the MongoDB database created in Phase 1.")
+    # getTags("Write a program that supports the following operations on the MongoDB database created in Phase 1.")
 
 if __name__ == "__main__":
     main()
-
-print(parse_terms('<span class="media-body ">28 September - 4 October, AD-CD </span><p>123</p>45'))
