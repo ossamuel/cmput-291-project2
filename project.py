@@ -104,13 +104,14 @@ def fromJsonFile(fileName, key, isPost, collection):
                 termsDict = {"Terms": terms}
 
                 combined = {**entry, **termsDict}
-                postCol.insert_one(combined)
-                postCol.create_index([('Terms', ASCENDING)])
-
+                # postCol.insert_one(combined)
+                # postCol.create_index([('Terms', ASCENDING)])
+                print(combined)
         else:
             for entry in data[key]["row"]:
                 # dict type
-                collection.insert_one(entry)
+                # collection.insert_one(entry)
+                print(entry)
 
     print("{} collection has been added.".format(key.upper()))
 
@@ -548,8 +549,10 @@ def menu():
 
 
 def main():
-    print(getMaxID(postCol))
-
+    # print(getMaxID(postCol))
+    # fromJsonFile("Posts.json", "posts", True, postCol)
+    # fromJsonFile("Votes.json", "votes", False, votesCol)
+    print(type(postCol))
 if __name__ == "__main__":
     main()
 
@@ -564,8 +567,8 @@ if __name__ == "__main__":
 #delete_all(tagsCol)
 #delete_all(postCol)
 
-# fromJsonFile("Posts.json", "posts", True, postCol)
-# fromJsonFile("Votes.json", "votes", False, votesCol)
+
+
 # fromJsonFile("Tags.json", "tags", False, tagsCol)
 
 
