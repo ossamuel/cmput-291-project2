@@ -67,10 +67,7 @@ def parse_terms(title: str, body: str, tags: str) -> list:
     res = [i for i in (title + ' ' + body + ' ' + tags).lower().translate(str.maketrans(string.punctuation + '\n', ' ' * (len(string.punctuation)+1))).split(' ') if len(i) > 2]
 
     # return {(idx, val) for idx, val in enumerate(dict.fromkeys(res))}
-
-
     # return list(dict.fromkeys(res))
-
 
     terms = []
     seen = set()
@@ -80,7 +77,6 @@ def parse_terms(title: str, body: str, tags: str) -> list:
             seen.add(i)
     return terms
 
-    
     # return list(set(res))
     
 
